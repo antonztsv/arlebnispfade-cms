@@ -1,0 +1,80 @@
+:root {
+  /* Farben */
+  --light: #ccc;
+  --lighter: #eee;
+  --lightest: #fff;
+  --lighten: rgba(255, 255, 255, 0.5);
+  --lighten-strong: rgba(255, 255, 255, 0.8);
+
+  --dark: #888;
+  --darker: #333;
+  --darkest: #000;
+  --darken: rgba(0, 0, 0, 0.1);
+  --darken-strong: rgba(0, 0, 0, 0.3);
+
+  --obk-gelb: #f2cb05;
+  --obk-grau: #666666;
+  --obk-blau: #0090d4;
+  --obk-rot: #c50e1f;
+  --obk-akzent-1: #cbe2ec;
+  --obk-akzent-2: #f1f2f5;
+
+  --color-text: var(--darker);
+  --color-headline: var(--darkest);
+  --color-accent: var(--obk-blau);
+  --color-decoration: var(--obk-akzent-1);
+  --color-background: var(--lightest);
+
+  /* Abstände */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 80px;
+  --space-5xl: 96px;
+
+  /* Fonts */
+  --font-headline: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Fontgrößen */
+  --font-xs: 12px;
+  --font-sm: 14px;
+  --font-base: 16px;
+  --font-lg: 18px;
+  --font-xl: 20px;
+  --font-2xl: 24px;
+  --font-3xl: 30px;
+  --font-4xl: 36px;
+  --font-5xl: 48px;
+  --font-6xl: 60px;
+  --font-7xl: 72px;
+
+  /* Komponenten */
+  --button-height: var(--space-xl);
+  --button-padding: var(--space-sm) var(--space-md);
+  --button-font-size: var(--font-sm);
+
+  --input-height: var(--space-xl);
+  --input-padding: var(--space-sm);
+  --input-font-size: var(--font-base);
+
+  --card-padding: var(--space-md);
+  --card-margin: var(--space-md);
+  --card-border-radius: var(--space-xs);
+
+  --navbar-height: var(--space-2xl);
+  --navbar-padding: var(--space-sm) var(--space-md);
+
+  --table-cell-padding: var(--space-sm) var(--space-md);
+
+  --modal-padding: var(--space-xl);
+  --modal-border-radius: var(--space-xs);
+
+  --alert-padding: var(--space-md);
+  --alert-margin: var(--space-md) 0;
+  --alert-border-radius: var(--space-xs);
+}
