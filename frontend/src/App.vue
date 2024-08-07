@@ -4,12 +4,23 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <header>
-    <div>
+    <div class="container">
       <h1>ARlebnispfade OBK CMS</h1>
     </div>
   </header>
 
-  <RouterView />
+  <div class="container">
+    <RouterView />
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+header {
+  background-color: var(--darker);
+  padding: 10px 0;
+
+  h1 {
+    color: var(--lightest);
+  }
+}
+</style>

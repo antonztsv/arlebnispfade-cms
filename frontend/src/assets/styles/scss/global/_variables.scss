@@ -1,3 +1,16 @@
+$grid-columns: 12;
+
+/* Breakpoints */
+$breakpoints: (
+  sm: 640px,
+  // Small devices (landscape phones)
+  md: 768px,
+  // Medium devices (tablets)
+  lg: 1024px,
+  // Large devices (desktops)
+  xl: 1280px // Extra large devices (large desktops)
+);
+
 :root {
   /* Farben */
   --light: #ccc;
@@ -77,4 +90,12 @@
   --alert-padding: var(--space-md);
   --alert-margin: var(--space-md) 0;
   --alert-border-radius: var(--space-xs);
+
+  /* Layout */
+  --container-padding: var(--space-md);
+  --container-max-width: 1200px;
+
+  // Grid
+  --grid-columns: #{$grid-columns};
+  --grid-gutter: var(--space-md);
 }

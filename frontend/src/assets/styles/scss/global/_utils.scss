@@ -1,0 +1,297 @@
+// ############################################################
+// Spacing Utilities
+
+// Margin
+$sides: (top, right, bottom, left);
+$sizes: (xs, sm, md, lg, xl, 2xl, 3xl, 4xl, 5xl);
+
+@each $size in $sizes {
+  .m-#{$size} {
+    margin: var(--space-#{$size});
+  }
+
+  @each $side in $sides {
+    .m#{str-slice($side, 0, 1)}-#{$size} {
+      margin-#{$side}: var(--space-#{$size});
+    }
+  }
+}
+
+// Padding
+@each $size in $sizes {
+  .p-#{$size} {
+    padding: var(--space-#{$size});
+  }
+
+  @each $side in $sides {
+    .p#{str-slice($side, 0, 1)}-#{$size} {
+      padding-#{$side}: var(--space-#{$size});
+    }
+  }
+}
+
+// ############################################################
+// Color Utilities
+
+// Text colors
+.text-light {
+  color: var(--light);
+}
+.text-lighter {
+  color: var(--lighter);
+}
+.text-lightest {
+  color: var(--lightest);
+}
+.text-dark {
+  color: var(--dark);
+}
+.text-darker {
+  color: var(--darker);
+}
+.text-darkest {
+  color: var(--darkest);
+}
+.text-obk-gelb {
+  color: var(--obk-gelb);
+}
+.text-obk-grau {
+  color: var(--obk-grau);
+}
+.text-obk-blau {
+  color: var(--obk-blau);
+}
+.text-obk-rot {
+  color: var(--obk-rot);
+}
+.text-obk-akzent-1 {
+  color: var(--obk-akzent-1);
+}
+.text-obk-akzent-2 {
+  color: var(--obk-akzent-2);
+}
+
+// Background colors
+.bg-light {
+  background-color: var(--light);
+}
+.bg-lighter {
+  background-color: var(--lighter);
+}
+.bg-lightest {
+  background-color: var(--lightest);
+}
+.bg-dark {
+  background-color: var(--dark);
+}
+.bg-darker {
+  background-color: var(--darker);
+}
+.bg-darkest {
+  background-color: var(--darkest);
+}
+.bg-obk-gelb {
+  background-color: var(--obk-gelb);
+}
+.bg-obk-grau {
+  background-color: var(--obk-grau);
+}
+.bg-obk-blau {
+  background-color: var(--obk-blau);
+}
+.bg-obk-rot {
+  background-color: var(--obk-rot);
+}
+.bg-obk-akzent-1 {
+  background-color: var(--obk-akzent-1);
+}
+.bg-obk-akzent-2 {
+  background-color: var(--obk-akzent-2);
+}
+
+// ############################################################
+// Additional utilities
+
+// Display
+.d-none {
+  display: none;
+}
+.d-block {
+  display: block;
+}
+.d-inline-block {
+  display: inline-block;
+}
+.d-flex {
+  display: flex;
+}
+
+// Flex
+.flex-column {
+  flex-direction: column;
+}
+.justify-content-center {
+  justify-content: center;
+}
+.align-items-center {
+  align-items: center;
+}
+
+// Text alignment
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+
+// Font weight
+.font-normal {
+  font-weight: normal;
+}
+.font-bold {
+  font-weight: bold;
+}
+
+// Width and Height
+.w-100 {
+  width: 100%;
+}
+.h-100 {
+  height: 100%;
+}
+
+// ############################################################
+// Grid System using CSS Grid
+
+.grid {
+  display: grid;
+  gap: var(--grid-gutter);
+}
+
+// Generate column classes
+@for $i from 1 through $grid-columns {
+  .grid-cols-#{$i} {
+    grid-template-columns: repeat($i, minmax(0, 1fr));
+  }
+}
+
+// Generate column span classes
+@for $i from 1 through $grid-columns {
+  .col-span-#{$i} {
+    grid-column: span $i / span $i;
+  }
+}
+
+// Responsive grid classes
+@each $breakpoint, $width in $breakpoints {
+  @media (min-width: $width) {
+    @for $i from 1 through $grid-columns {
+      .grid-cols-#{$i}-#{$breakpoint} {
+        grid-template-columns: repeat($i, minmax(0, 1fr));
+      }
+    }
+
+    @for $i from 1 through $grid-columns {
+      .col-span-#{$i}-#{$breakpoint} {
+        grid-column: span $i / span $i;
+      }
+    }
+  }
+}
+
+// Grid alignment utilities
+.justify-items-start {
+  justify-items: start;
+}
+.justify-items-end {
+  justify-items: end;
+}
+.justify-items-center {
+  justify-items: center;
+}
+.justify-items-stretch {
+  justify-items: stretch;
+}
+
+.align-items-start {
+  align-items: start;
+}
+.align-items-end {
+  align-items: end;
+}
+.align-items-center {
+  align-items: center;
+}
+.align-items-stretch {
+  align-items: stretch;
+}
+
+.justify-self-start {
+  justify-self: start;
+}
+.justify-self-end {
+  justify-self: end;
+}
+.justify-self-center {
+  justify-self: center;
+}
+.justify-self-stretch {
+  justify-self: stretch;
+}
+
+.align-self-start {
+  align-self: start;
+}
+.align-self-end {
+  align-self: end;
+}
+.align-self-center {
+  align-self: center;
+}
+.align-self-stretch {
+  align-self: stretch;
+}
+
+// Grid gap utilities
+.gap-xs {
+  gap: var(--space-xs);
+}
+.gap-sm {
+  gap: var(--space-sm);
+}
+.gap-md {
+  gap: var(--space-md);
+}
+.gap-lg {
+  gap: var(--space-lg);
+}
+.gap-xl {
+  gap: var(--space-xl);
+}
+
+// Responsive gap utilities
+@each $breakpoint, $width in $breakpoints {
+  @media (min-width: $width) {
+    .gap-xs-#{$breakpoint} {
+      gap: var(--space-xs);
+    }
+    .gap-sm-#{$breakpoint} {
+      gap: var(--space-sm);
+    }
+    .gap-md-#{$breakpoint} {
+      gap: var(--space-md);
+    }
+    .gap-lg-#{$breakpoint} {
+      gap: var(--space-lg);
+    }
+    .gap-xl-#{$breakpoint} {
+      gap: var(--space-xl);
+    }
+  }
+}
+
+// ############################################################
