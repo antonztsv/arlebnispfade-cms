@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "create-user": "ts-node src/scripts/createUser.ts"
   },
   "keywords": [],
   "author": "Anton Zaitsev",
@@ -14,6 +15,7 @@
   "dependencies": {
     "@octokit/rest": "^21.0.1",
     "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.8.0",
