@@ -3,30 +3,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { connectToDatabase } from './db/database';
-import statusRoutes from './routes/statusRoutes';
-import authRoutes from './routes/authRoutes';
-import contentRoutes from './routes/contentRoutes';
-import routeRoutes from './routes/routeRoutes';
-import { authMiddleware, roleMiddleware } from './middleware/auth';
+import apiRoutes from './routes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-const apiRouter = express.Router();
-
-// Public status routes
-apiRouter.use('/', statusRoutes);
-
-// Auth routes
-apiRouter.use('/auth', authRoutes);
-
-// CMS routes
-apiRouter.use('/routes', routeRoutes);
-apiRouter.use('/content', contentRoutes);
-
-app.use('/api', apiRouter);
+app.use('/api', apiRoutes);
 
 connectToDatabase()
   .then(() => {
