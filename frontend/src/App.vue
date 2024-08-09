@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import Header from './components/MainHeader.vue'
+import Footer from './components/MainFooter.vue'
 </script>
 
 <template>
-  <header class="bg-gray-800 py-5">
-    <div class="container mx-auto px-5">
-      <h1 class="font-headline text-3xl font-bold text-white">ARlebnispfade OBK CMS</h1>
-    </div>
-  </header>
+  <Header />
 
-  <div class="container mx-auto px-5">
-    <RouterView />
-  </div>
+  <RouterView />
+
+  <Footer />
 </template>
 
 <style scoped></style>

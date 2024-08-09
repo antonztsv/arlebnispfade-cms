@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="mt-7">
+  <div class="container mx-auto px-5">
     <h1 class="mb-5 font-headline text-3xl font-bold">Tailwind Test</h1>
 
     <!-- Basic 3-column layout -->
