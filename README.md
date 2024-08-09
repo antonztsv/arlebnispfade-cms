@@ -41,7 +41,7 @@ git clone
 
 ```bash
 # Docker Compose starten
-docker-compose up -d
+docker-compose up -d  --build
 ```
 
 ## Verwendung
