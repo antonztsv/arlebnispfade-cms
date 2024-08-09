@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import { getExample, createExample } from '@/controllers/exampleController';
+import { Router } from 'express'
+import { getExample, createExample } from '@/controllers/exampleController'
 
-const router = Router();
+const router = Router()
 
-router.get('/example', getExample);
-router.post('/example', createExample);
+router.get('/example', getExample)
+router.post('/example', createExample)
 
-export default router;
+export default router
