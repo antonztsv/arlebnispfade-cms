@@ -20,4 +20,17 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/arlebnispfade
     command: npm run dev
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

@@ -1,20 +1,39 @@
 import express from 'express'
+import { connectToDatabase } from '@/db/database'
+
 import exampleRoutes from '@/routes/exampleRoutes'
-import { errorHandler } from '@/helpers/errorHandler'
+import authRoutes from '@/routes/authRoutes'
+
+import { authMiddleware, roleMiddleware } from '@/middleware/auth'
 
 const app = express()
-const port = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000
 
 app.use(express.json())
 
-// Routes
-app.use('/api', exampleRoutes)
+const apiRouter = express.Router()
 
-// Error handling middleware
-app.use(errorHandler)
+// Public routes
+apiRouter.use('/', exampleRoutes)
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`)
-})
+// Auth routes
+apiRouter.use('/auth', authRoutes)
+
+// Protected routes
+apiRouter.use('/', authMiddleware)
+apiRouter.use('/admin', roleMiddleware(['admin']))
+
+app.use('/api', apiRouter)
+
+connectToDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`)
+    })
+  })
+  .catch((error) => {
+    console.error('Failed to connect to the database', error)
+    process.exit(1)
+  })
 
 export default app
