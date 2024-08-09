@@ -5,8 +5,8 @@ import bcrypt from 'bcrypt'
 async function createUser() {
   await connectToDatabase()
 
-  const username = 'admin'
-  const password = 'admin'
+  const username = process.env.ADMIN_USERNAME || 'admin'
+  const password = process.env.ADMIN_PASSWORD || 'admin'
   const role = 'admin'
 
   try {

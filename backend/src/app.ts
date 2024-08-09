@@ -14,13 +14,13 @@ app.use(express.json())
 const apiRouter = express.Router()
 
 // Public routes
-apiRouter.use('/', exampleRoutes)
+// apiRouter.use('/', exampleRoutes)
 
 // Auth routes
 apiRouter.use('/auth', authRoutes)
 
 // Protected routes
-apiRouter.use('/', authMiddleware)
+apiRouter.use('/', authMiddleware, exampleRoutes)
 apiRouter.use('/admin', roleMiddleware(['admin']))
 
 app.use('/api', apiRouter)
