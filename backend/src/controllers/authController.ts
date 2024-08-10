@@ -2,7 +2,7 @@ import config from '@/config';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { User } from '../models/User';
+import { User } from '@/models/User';
 import dotenv from 'dotenv';
 dotenv.config();
 

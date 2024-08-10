@@ -10,6 +10,7 @@ const config = {
   adminUsername: process.env.ADMIN_USERNAME || 'admin',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin',
   mongodbUri: process.env.MONGODB_URI,
+  commitPrefix: 'CMS:',
 };
 
 export default config;
