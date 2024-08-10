@@ -1,6 +1,6 @@
 import config from '@/config';
 import { Octokit } from '@octokit/rest';
-import { Route } from '@/types/githubTypes';
+import { Route } from '@/types/contentTypes';
 import dotenv from 'dotenv';
 import matter from 'gray-matter';
 
