@@ -1,9 +1,10 @@
+import config from '@/config';
 import mongoose from 'mongoose';
 
-if (!process.env.MONGODB_URI) {
+if (!config.mongodbUri) {
   throw new Error('MONGODB_URI must be set in .env');
 }
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = config.mongodbUri;
 
 export async function connectToDatabase() {
   try {

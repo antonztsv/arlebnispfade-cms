@@ -1,3 +1,4 @@
+import config from '@/config';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
@@ -5,10 +6,10 @@ import { User } from '../models/User';
 import dotenv from 'dotenv';
 dotenv.config();
 
-if (!process.env.JWT_SECRET) {
+if (!config.jwtSecret) {
   throw new Error('JWT_SECRET must be set in .env');
 }
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = config.jwtSecret;
 
 export const register = async (req: Request, res: Response) => {
   const { username, password, role } = req.body;

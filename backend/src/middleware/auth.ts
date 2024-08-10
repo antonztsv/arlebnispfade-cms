@@ -1,10 +1,11 @@
+import config from '@/config';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-if (!process.env.JWT_SECRET) {
+if (!config.jwtSecret) {
   throw new Error('JWT_SECRET must be set in .env');
 }
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = config.jwtSecret;
 
 export interface AuthRequest extends Request {
   userId?: string;

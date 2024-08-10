@@ -1,24 +1,19 @@
+import config from '@/config';
 import { Octokit } from '@octokit/rest';
+import { Route } from '@/types/githubTypes';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const octokit = new Octokit({
-  auth: process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+  auth: config.githubPersonalAccessToken,
 });
 
-if (!process.env.GITHUB_REPO_OWNER || !process.env.GITHUB_REPO_NAME) {
+if (!config.githubRepoName || !config.githubRepoOwner) {
   throw new Error('Missing GitHub repository configuration');
 }
-const owner = process.env.GITHUB_REPO_OWNER;
-const repo = process.env.GITHUB_REPO_NAME;
-
-interface Route {
-  id: string;
-  name: string;
-  description: string;
-  pois: string[];
-}
+const owner = config.githubRepoOwner;
+const repo = config.githubRepoName;
 
 export async function getAllRoutes(): Promise<Route[]> {
   const { data: contents } = await octokit.repos.getContent({

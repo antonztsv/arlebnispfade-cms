@@ -1,16 +1,17 @@
+import config from '@/config';
 import { Octokit } from '@octokit/rest';
 import dotenv from 'dotenv';
 dotenv.config();
 
 const octokit = new Octokit({
-  auth: process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+  auth: config.githubPersonalAccessToken,
 });
 
-if (!process.env.GITHUB_REPO_OWNER || !process.env.GITHUB_REPO_NAME) {
-  throw new Error('GITHUB_REPO_OWNER and GITHUB_REPO_NAME must be set in .env');
+if (!config.githubRepoName || !config.githubRepoOwner) {
+  throw new Error('Missing GitHub repository configuration');
 }
-const owner = process.env.GITHUB_REPO_OWNER;
-const repo = process.env.GITHUB_REPO_NAME;
+const owner = config.githubRepoOwner;
+const repo = config.githubRepoName;
 
 export async function getFileContent(path: string): Promise<string> {
   try {
