@@ -11,6 +11,7 @@ const config = {
   adminPassword: process.env.ADMIN_PASSWORD || 'admin',
   mongodbUri: process.env.MONGODB_URI,
   commitPrefix: 'CMS:',
+  currentRoutes: ['wiehl', 'wipperfuerth', 'strasse-der-arbeit'],
 };
 
 export default config;

@@ -1,6 +1,6 @@
 import config from '@/config';
 import { Octokit } from '@octokit/rest';
-import { Route } from '@/types/contentTypes';
+import { routeSchema, Route } from '@/schemas/routeSchema';
 import dotenv from 'dotenv';
 import matter from 'gray-matter';
 
@@ -29,11 +29,7 @@ export async function getAllRoutes(): Promise<Route[]> {
 
   const routes: Route[] = await Promise.all(
     contents
-      .filter(
-        (item) =>
-          item.type === 'dir' &&
-          ['wiehl', 'wipperfuerth', 'strasse-der-arbeit'].includes(item.name),
-      )
+      .filter((item) => item.type === 'dir' && config.currentRoutes.includes(item.name))
       .map(async (item) => {
         const routeMetadata = await getRouteMetadata(item.name);
         return {
@@ -78,32 +74,31 @@ export async function updateRoute(routeId: string, routeData: Partial<Route>): P
     const content = Buffer.from(file.content, 'base64').toString('utf8');
     const { data: frontmatter, content: markdownContent } = matter(content);
 
-    const updatedFrontmatter = {
-      ...frontmatter,
+    const updatedRoute = {
+      id: routeId,
       title: routeData.title || frontmatter.title,
       layout: routeData.layout || frontmatter.layout,
       image: routeData.image || frontmatter.image,
       type: routeData.type || frontmatter.type,
     };
 
-    const updatedContent = matter.stringify(markdownContent, updatedFrontmatter);
+    const validation = validateRoute(updatedRoute);
+    if (!validation.isValid) {
+      throw new Error(`Invalid route data: ${validation.errors.join(', ')}`);
+    }
+
+    const updatedContent = matter.stringify(markdownContent, updatedRoute);
 
     await octokit.repos.createOrUpdateFileContents({
       owner,
       repo,
       path,
-      message: `${config.commitPrefix} Update route metadata for ${routeId}`,
+      message: `${config.commitPrefix} Update route ${routeId}`,
       content: Buffer.from(updatedContent).toString('base64'),
       sha: file.sha,
     });
 
-    return {
-      id: routeId,
-      title: updatedFrontmatter.title,
-      layout: updatedFrontmatter.layout,
-      image: updatedFrontmatter.image,
-      type: updatedFrontmatter.type,
-    };
+    return updatedRoute;
   } catch (error) {
     if (error instanceof Error) {
       if ('status' in error && error.status === 404) {
@@ -149,5 +144,17 @@ async function getRouteMetadata(routeId: string): Promise<{
       throw error; // Re-throw other errors
     }
     throw new Error('An unknown error occurred');
+  }
+}
+
+function validateRoute(route: Partial<Route>): { isValid: boolean; errors: string[] } {
+  const result = routeSchema.safeParse(route);
+  if (result.success) {
+    return { isValid: true, errors: [] };
+  } else {
+    return {
+      isValid: false,
+      errors: result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`),
+    };
   }
 }

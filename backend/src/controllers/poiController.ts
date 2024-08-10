@@ -1,5 +1,3 @@
-// src/controllers/poiController.ts
-
 import { Request, Response } from 'express';
 import * as poiService from '@/services/poiService';
 

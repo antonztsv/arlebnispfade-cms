@@ -1,8 +1,6 @@
-// src/routes/api/poiRoutes.ts
-
 import express from 'express';
 import * as poiController from '@/controllers/poiController';
-import { authMiddleware } from '../../middleware/auth';
+import { authMiddleware } from '@/middleware/auth';
 
 const router = express.Router();
 

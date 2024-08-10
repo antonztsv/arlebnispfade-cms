@@ -1,7 +1,7 @@
 import config from '@/config';
 import { Octokit } from '@octokit/rest';
 import matter from 'gray-matter';
-import { POI } from '@/types/contentTypes';
+import { poiSchema, POI } from '@/schemas/poiSchema';
 
 const octokit = new Octokit({
   auth: config.githubPersonalAccessToken,
@@ -77,6 +77,11 @@ export async function getPOIById(routeId: string, poiId: string): Promise<POI> {
 }
 
 export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Promise<POI> {
+  const validation = validatePOI(poiData);
+  if (!validation.isValid) {
+    throw new Error(`Invalid POI data: ${validation.errors.join(', ')}`);
+  }
+
   const poiId = generatePoiId(poiData.title);
   const path = `src/${routeId}/${poiId}.md`;
   const content = matter.stringify(poiData.content || '', poiData);
@@ -85,7 +90,7 @@ export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Prom
     owner,
     repo,
     path,
-    message: `${config.commitPrefix} Create new POI: ${poiData.title}`,
+    message: `${config.commitPrefix} Create new POI ${poiId}`,
     content: Buffer.from(content).toString('base64'),
   });
 
@@ -98,38 +103,59 @@ export async function updatePOI(
   poiData: Partial<POI>,
 ): Promise<POI> {
   const path = `src/${routeId}/${poiId}.md`;
-  const { data: existingFile } = await octokit.repos.getContent({
-    owner,
-    repo,
-    path,
-  });
 
-  if ('content' in existingFile) {
-    const existingContent = Buffer.from(existingFile.content, 'base64').toString('utf8');
-    const { data: existingFrontmatter, content: existingMarkdownContent } = matter(existingContent);
-
-    const updatedFrontmatter = { ...existingFrontmatter, ...poiData };
-    const updatedContent = matter.stringify(
-      poiData.content || existingMarkdownContent,
-      updatedFrontmatter,
-    );
-
-    await octokit.repos.createOrUpdateFileContents({
+  try {
+    const { data: existingFile } = await octokit.repos.getContent({
       owner,
       repo,
       path,
-      message: `${config.commitPrefix} Update POI: ${poiId}`,
-      content: Buffer.from(updatedContent).toString('base64'),
-      sha: existingFile.sha,
     });
 
-    return {
-      id: poiId,
-      ...updatedFrontmatter,
-      content: poiData.content || existingMarkdownContent,
-    } as POI;
+    if ('content' in existingFile) {
+      const existingContent = Buffer.from(existingFile.content, 'base64').toString('utf8');
+      const { data: existingFrontmatter, content: existingMarkdownContent } =
+        matter(existingContent);
+
+      const updatedPOI = { ...existingFrontmatter, ...poiData, id: poiId };
+
+      const validationResult = poiSchema.safeParse(updatedPOI);
+      if (!validationResult.success) {
+        const errorMessages = validationResult.error.issues.map(
+          (issue) => `${issue.path.join('.')}: ${issue.message}`,
+        );
+        throw new Error(`Invalid POI data: ${errorMessages.join(', ')}`);
+      }
+
+      const updatedContent = matter.stringify(
+        poiData.content || existingMarkdownContent,
+        validationResult.data,
+      );
+
+      await octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path,
+        message: `${config.commitPrefix} Update POI ${poiId}`,
+        content: Buffer.from(updatedContent).toString('base64'),
+        sha: existingFile.sha,
+      });
+
+      return {
+        ...validationResult.data,
+        content: poiData.content || existingMarkdownContent,
+      };
+    } else {
+      throw new Error('Unexpected response structure from GitHub API');
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      if ('status' in error && error.status === 404) {
+        throw new Error('POI not found');
+      }
+      throw error;
+    }
+    throw new Error('An unknown error occurred while updating the POI');
   }
-  throw new Error('POI not found');
 }
 
 export async function deletePOI(routeId: string, poiId: string): Promise<void> {
@@ -145,7 +171,7 @@ export async function deletePOI(routeId: string, poiId: string): Promise<void> {
       owner,
       repo,
       path,
-      message: `${config.commitPrefix} Delete POI: ${poiId}`,
+      message: `${config.commitPrefix} Delete POI ${poiId}`,
       sha: file.sha,
     });
   } else {
@@ -158,4 +184,16 @@ function generatePoiId(title: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+function validatePOI(poi: Partial<POI>): { isValid: boolean; errors: string[] } {
+  const result = poiSchema.safeParse(poi);
+  if (result.success) {
+    return { isValid: true, errors: [] };
+  } else {
+    return {
+      isValid: false,
+      errors: result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`),
+    };
+  }
 }
