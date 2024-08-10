@@ -1,8 +1,9 @@
 import express from 'express';
-import statusRoutes from './api/statusRoutes';
-import authRoutes from './api/authRoutes';
-import contentRoutes from './api/contentRoutes';
-import routeRoutes from './api/routeRoutes';
+import statusRoutes from '@/routes/api/statusRoutes';
+import authRoutes from '@/routes/api/authRoutes';
+import contentRoutes from '@/routes/api/contentRoutes';
+import routeRoutes from '@/routes/api/routeRoutes';
+import poiRoutes from '@/routes/api/poiRoutes';
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.use('/auth', authRoutes);
 // CMS routes
 router.use('/content', contentRoutes);
 router.use('/routes', routeRoutes);
+router.use('/routes', poiRoutes);
 
 export default router;

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as githubService from '../services/githubService.js';
+import * as githubService from '@/services/contentService';
 
 export async function getContent(req: Request, res: Response) {
   try {

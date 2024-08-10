@@ -1,3 +1,4 @@
+import config from '@/config';
 import { connectToDatabase } from '../db/database';
 import { User } from '../models/User';
 import bcrypt from 'bcrypt';
@@ -5,8 +6,8 @@ import bcrypt from 'bcrypt';
 async function createUser() {
   await connectToDatabase();
 
-  const username = process.env.ADMIN_USERNAME || 'admin';
-  const password = process.env.ADMIN_PASSWORD || 'admin';
+  const username = config.adminUsername;
+  const password = config.adminPassword;
   const role = 'admin';
 
   try {

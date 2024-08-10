@@ -1,10 +1,12 @@
+import config from '@/config';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { tokenPayloadSchema, TokenPayload } from '@/schemas/authSchema';
 
-if (!process.env.JWT_SECRET) {
+if (!config.jwtSecret) {
   throw new Error('JWT_SECRET must be set in .env');
 }
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = config.jwtSecret;
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -18,9 +20,14 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   }
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
-    req.userId = decoded.userId;
-    req.userRole = decoded.role;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const result = tokenPayloadSchema.safeParse(decoded);
+    if (!result.success) {
+      return res.status(401).json({ message: 'Invalid token payload' });
+    }
+    const payload = result.data as TokenPayload;
+    req.userId = payload.userId;
+    req.userRole = payload.role;
     next();
   } catch (error) {
     res.status(401).json({ message: 'Invalid token' });

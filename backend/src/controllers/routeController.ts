@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as routeService from '../services/routeService.js';
+import * as routeService from '@/services/routeService';
 
 export async function getAllRoutes(req: Request, res: Response) {
   try {
@@ -18,7 +18,11 @@ export async function getRouteById(req: Request, res: Response) {
     res.json(route);
   } catch (error) {
     console.error('Error in getRouteById:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    if (error instanceof Error && error.message.includes('Route not found')) {
+      res.status(404).json({ error: 'Route not found' });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 }
 
@@ -26,10 +30,14 @@ export async function updateRoute(req: Request, res: Response) {
   try {
     const { routeId } = req.params;
     const routeData = req.body;
-    await routeService.updateRoute(routeId, routeData);
-    res.json({ message: 'Route updated successfully' });
+    const updatedRoute = await routeService.updateRoute(routeId, routeData);
+    res.json({ message: 'Route updated successfully', route: updatedRoute });
   } catch (error) {
     console.error('Error in updateRoute:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    if (error instanceof Error && error.message.includes('Route not found')) {
+      res.status(404).json({ error: 'Route not found' });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 }
