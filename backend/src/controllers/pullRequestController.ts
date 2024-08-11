@@ -1,22 +1,6 @@
 import { Request, Response } from 'express';
 import * as pullRequestService from '@/services/pullRequestService';
 
-export async function createPullRequest(req: Request, res: Response) {
-  try {
-    const { baseBranch, headBranch, title, body } = req.body;
-    const pullRequest = await pullRequestService.createPullRequest(
-      baseBranch,
-      headBranch,
-      title,
-      body,
-    );
-    res.status(201).json(pullRequest);
-  } catch (error) {
-    console.error('Error in createPullRequest:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
-
 export async function listPullRequests(req: Request, res: Response) {
   try {
     const pullRequests = await pullRequestService.listPullRequests();
@@ -39,6 +23,22 @@ export async function getPullRequest(req: Request, res: Response) {
     } else {
       res.status(500).json({ error: 'Internal Server Error' });
     }
+  }
+}
+
+export async function createPullRequest(req: Request, res: Response) {
+  try {
+    const { baseBranch, headBranch, title, body } = req.body;
+    const pullRequest = await pullRequestService.createPullRequest(
+      baseBranch,
+      headBranch,
+      title,
+      body,
+    );
+    res.status(201).json(pullRequest);
+  } catch (error) {
+    console.error('Error in createPullRequest:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }
 

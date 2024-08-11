@@ -15,28 +15,6 @@ function isCMSPullRequest(title: string): boolean {
   return title.startsWith('[CMS]');
 }
 
-export async function createPullRequest(
-  baseBranch: string,
-  headBranch: string,
-  title: string,
-  body: string,
-) {
-  try {
-    const { data: pullRequest } = await octokit.pulls.create({
-      owner,
-      repo,
-      title,
-      head: headBranch,
-      base: baseBranch,
-      body,
-    });
-    return pullRequest;
-  } catch (error) {
-    console.error('Error creating pull request:', error);
-    throw error;
-  }
-}
-
 export async function listPullRequests() {
   try {
     const { data: allPullRequests } = await octokit.pulls.list({
@@ -66,7 +44,7 @@ export async function getPullRequest(pullNumber: number) {
       throw new Error('This is not a CMS-created pull request');
     }
 
-    // Zusätzliche Details abrufen, die für das Frontend nützlich sein könnten
+    // Get the files in the pull request
     const { data: files } = await octokit.pulls.listFiles({
       owner,
       repo,
@@ -86,6 +64,28 @@ export async function getPullRequest(pullNumber: number) {
     };
   } catch (error) {
     console.error('Error getting pull request:', error);
+    throw error;
+  }
+}
+
+export async function createPullRequest(
+  baseBranch: string,
+  headBranch: string,
+  title: string,
+  body: string,
+) {
+  try {
+    const { data: pullRequest } = await octokit.pulls.create({
+      owner,
+      repo,
+      title,
+      head: headBranch,
+      base: baseBranch,
+      body,
+    });
+    return pullRequest;
+  } catch (error) {
+    console.error('Error creating pull request:', error);
     throw error;
   }
 }
