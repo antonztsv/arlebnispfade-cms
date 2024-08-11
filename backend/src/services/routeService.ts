@@ -30,7 +30,6 @@ export async function getAllRoutes(): Promise<Route[]> {
       .map(async (item) => {
         const routeMetadata = await getRouteMetadata(item.name);
         return {
-          id: item.name,
           title: routeMetadata.title || item.name,
           layout: routeMetadata.layout || '',
           image: routeMetadata.image || '',
@@ -50,7 +49,6 @@ export async function getRouteById(routeId: string): Promise<Route> {
   }
 
   return {
-    id: routeId,
     title: routeMetadata.title,
     layout: routeMetadata.layout || '',
     image: routeMetadata.image || '',
@@ -76,7 +74,6 @@ export async function updateRoute(routeId: string, routeData: Partial<Route>): P
     const { data: existingFrontmatter, content: existingMarkdownContent } = matter(content);
 
     const updatedRoute = {
-      id: routeId,
       title: routeData.title || existingFrontmatter.title,
       layout: routeData.layout || existingFrontmatter.layout,
       image: routeData.image || existingFrontmatter.image,
