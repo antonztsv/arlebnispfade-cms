@@ -1,17 +1,17 @@
 import config from '@/config';
-import { Octokit } from '@octokit/rest';
 import matter from 'gray-matter';
 import { poiSchema, POI } from '@/schemas/poiSchema';
-
-const octokit = new Octokit({
-  auth: config.githubPersonalAccessToken,
-});
-
-if (!config.githubRepoName || !config.githubRepoOwner) {
-  throw new Error('Missing GitHub repository configuration');
-}
-const owner = config.githubRepoOwner;
-const repo = config.githubRepoName;
+import * as pullRequestService from '@/services/pullRequestService';
+import {
+  createBranch,
+  createOrUpdateFile,
+  generatePRTitle,
+  generatePRDescription,
+  detectChanges,
+  octokit,
+  owner,
+  repo,
+} from '@/utils/githubUtils';
 
 export async function getPOIsForRoute(routeId: string): Promise<POI[]> {
   const { data: contents } = await octokit.repos.getContent({
@@ -86,13 +86,19 @@ export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Prom
   const path = `src/${routeId}/${poiId}.md`;
   const content = matter.stringify(poiData.content || '', poiData);
 
-  await octokit.repos.createOrUpdateFileContents({
-    owner,
-    repo,
+  const branchName = `create-poi-${poiId}-${Date.now()}`;
+  await createBranch(branchName);
+
+  await createOrUpdateFile(
     path,
-    message: `${config.commitPrefix} Create new POI ${poiId}`,
-    content: Buffer.from(content).toString('base64'),
-  });
+    content,
+    `${config.commitPrefix} Create new POI ${poiId}`,
+    branchName,
+  );
+
+  const prTitle = generatePRTitle('Create', 'POI', poiId);
+  const prDescription = generatePRDescription('Create', 'POI', poiData.title);
+  await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
   return { ...poiData, id: poiId } as POI;
 }
@@ -116,7 +122,25 @@ export async function updatePOI(
       const { data: existingFrontmatter, content: existingMarkdownContent } =
         matter(existingContent);
 
-      const updatedPOI = { ...existingFrontmatter, ...poiData, id: poiId };
+      const updatedPOI = {
+        ...existingFrontmatter,
+        ...poiData,
+        id: poiId,
+      };
+
+      // Check for changes
+      const frontmatterChanges = detectChanges(existingFrontmatter, updatedPOI);
+
+      const contentChanged = poiData.content && poiData.content !== existingMarkdownContent;
+
+      // No changes detected
+      if (!frontmatterChanges && !contentChanged) {
+        console.log('No changes detected. Skipping pull request creation.');
+        return updatedPOI as POI;
+      }
+
+      // Changes detected
+      console.log('Changes detected:', { frontmatterChanges, contentChanged });
 
       const validationResult = poiSchema.safeParse(updatedPOI);
       if (!validationResult.success) {
@@ -131,14 +155,20 @@ export async function updatePOI(
         validationResult.data,
       );
 
-      await octokit.repos.createOrUpdateFileContents({
-        owner,
-        repo,
+      const branchName = `update-poi-${poiId}-${Date.now()}`;
+      await createBranch(branchName);
+
+      await createOrUpdateFile(
         path,
-        message: `${config.commitPrefix} Update POI ${poiId}`,
-        content: Buffer.from(updatedContent).toString('base64'),
-        sha: existingFile.sha,
-      });
+        updatedContent,
+        `${config.commitPrefix} Update POI ${poiId}`,
+        branchName,
+        existingFile.sha,
+      );
+
+      const prTitle = generatePRTitle('Update', 'POI', poiId);
+      const prDescription = generatePRDescription('Update', 'POI', updatedPOI.title || poiId);
+      await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
       return {
         ...validationResult.data,
@@ -167,13 +197,21 @@ export async function deletePOI(routeId: string, poiId: string): Promise<void> {
   });
 
   if ('sha' in file) {
+    const branchName = `delete-poi-${poiId}-${Date.now()}`;
+    await createBranch(branchName);
+
     await octokit.repos.deleteFile({
       owner,
       repo,
       path,
       message: `${config.commitPrefix} Delete POI ${poiId}`,
       sha: file.sha,
+      branch: branchName,
     });
+
+    const prTitle = generatePRTitle('Delete', 'POI', poiId);
+    const prDescription = generatePRDescription('Delete', 'POI', poiId);
+    await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
   } else {
     throw new Error('POI not found');
   }

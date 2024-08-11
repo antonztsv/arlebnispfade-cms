@@ -1,20 +1,17 @@
 import config from '@/config';
-import { Octokit } from '@octokit/rest';
 import { routeSchema, Route } from '@/schemas/routeSchema';
-import dotenv from 'dotenv';
 import matter from 'gray-matter';
-
-dotenv.config();
-
-const octokit = new Octokit({
-  auth: config.githubPersonalAccessToken,
-});
-
-if (!config.githubRepoName || !config.githubRepoOwner) {
-  throw new Error('Missing GitHub repository configuration');
-}
-const owner = config.githubRepoOwner;
-const repo = config.githubRepoName;
+import * as pullRequestService from './pullRequestService';
+import {
+  createBranch,
+  createOrUpdateFile,
+  generatePRTitle,
+  generatePRDescription,
+  detectChanges,
+  octokit,
+  owner,
+  repo,
+} from '@/utils/githubUtils';
 
 export async function getAllRoutes(): Promise<Route[]> {
   const { data: contents } = await octokit.repos.getContent({
@@ -65,38 +62,60 @@ export async function updateRoute(routeId: string, routeData: Partial<Route>): P
   const path = `src/${routeId}/index.md`;
 
   try {
-    const { data: file } = await octokit.repos.getContent({ owner, repo, path });
+    const { data: file } = await octokit.repos.getContent({
+      owner,
+      repo,
+      path,
+    });
 
     if (Array.isArray(file) || file.type !== 'file') {
       throw new Error('Unexpected response structure');
     }
 
     const content = Buffer.from(file.content, 'base64').toString('utf8');
-    const { data: frontmatter, content: markdownContent } = matter(content);
+    const { data: existingFrontmatter, content: existingMarkdownContent } = matter(content);
 
     const updatedRoute = {
       id: routeId,
-      title: routeData.title || frontmatter.title,
-      layout: routeData.layout || frontmatter.layout,
-      image: routeData.image || frontmatter.image,
-      type: routeData.type || frontmatter.type,
+      title: routeData.title || existingFrontmatter.title,
+      layout: routeData.layout || existingFrontmatter.layout,
+      image: routeData.image || existingFrontmatter.image,
+      type: routeData.type || existingFrontmatter.type,
     };
+
+    // Check for changes
+    const hasChanges = detectChanges(existingFrontmatter, updatedRoute);
+
+    if (!hasChanges) {
+      // No changes detected
+      console.log('No changes detected. Skipping pull request creation.');
+      return updatedRoute;
+    }
+
+    // Changes detected
+    console.log('Changes detected:', routeData);
 
     const validation = validateRoute(updatedRoute);
     if (!validation.isValid) {
       throw new Error(`Invalid route data: ${validation.errors.join(', ')}`);
     }
 
-    const updatedContent = matter.stringify(markdownContent, updatedRoute);
+    const updatedContent = matter.stringify(existingMarkdownContent, updatedRoute);
 
-    await octokit.repos.createOrUpdateFileContents({
-      owner,
-      repo,
+    const branchName = `update-route-${routeId}-${Date.now()}`;
+    await createBranch(branchName);
+
+    await createOrUpdateFile(
       path,
-      message: `${config.commitPrefix} Update route ${routeId}`,
-      content: Buffer.from(updatedContent).toString('base64'),
-      sha: file.sha,
-    });
+      updatedContent,
+      `${config.commitPrefix} Update route ${routeId}`,
+      branchName,
+      file.sha,
+    );
+
+    const prTitle = generatePRTitle('Update', 'Route', routeId);
+    const prDescription = generatePRDescription('Update', 'Route', updatedRoute.title || routeId);
+    await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
     return updatedRoute;
   } catch (error) {
@@ -104,7 +123,7 @@ export async function updateRoute(routeId: string, routeData: Partial<Route>): P
       if ('status' in error && error.status === 404) {
         throw new Error(`Route not found: ${routeId}`);
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
     throw new Error('An unknown error occurred');
   }
@@ -141,7 +160,7 @@ async function getRouteMetadata(routeId: string): Promise<{
       if ('status' in error && error.status === 404) {
         throw new Error(`Route not found: ${routeId}`);
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
     throw new Error('An unknown error occurred');
   }
