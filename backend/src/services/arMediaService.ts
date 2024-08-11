@@ -1,6 +1,6 @@
 import config from '@/config';
 import crypto from 'crypto';
-import { arMediaSchema, ARMedia } from '@/schemas/arMediaSchema';
+import { ARMedia } from '@/schemas/arMediaSchema';
 import * as pullRequestService from '@/services/pullRequestService';
 import {
   createBranch,
@@ -11,6 +11,7 @@ import {
   owner,
   repo,
 } from '@/utils/githubUtils';
+import { NotFoundError, ValidationError } from '@/utils/errorHandler';
 
 export async function getARMediaForRoute(routeId: string): Promise<ARMedia[]> {
   const basePath = `src/${routeId}/ar-media`;
@@ -18,12 +19,12 @@ export async function getARMediaForRoute(routeId: string): Promise<ARMedia[]> {
     const arMedia = await getARMediaRecursive(basePath, basePath);
 
     if (arMedia.length === 0) {
-      throw new Error('Route not found');
+      throw new NotFoundError(`Route not found: ${routeId}`);
     }
 
     return arMedia;
   } catch (error) {
-    if (error instanceof Error && error.message === 'Route not found') {
+    if (error instanceof NotFoundError) {
       throw error;
     }
     throw new Error('An error occurred while fetching AR media');
@@ -37,13 +38,17 @@ export async function getARMediaById(routeId: string, mediaId: string): Promise<
   const media = allMedia.find((item) => item.id === mediaId);
 
   if (!media) {
-    throw new Error('AR Media not found');
+    throw new NotFoundError(`AR Media not found: ${mediaId}`);
   }
 
   return media;
 }
 
 export async function createARMedia(routeId: string, file: Express.Multer.File): Promise<ARMedia> {
+  if (!file) {
+    throw new ValidationError('No file uploaded');
+  }
+
   const filename = file.originalname;
   const path = `src/${routeId}/ar-media/${filename}`;
   const content = file.buffer.toString('base64');
@@ -75,12 +80,16 @@ export async function updateARMedia(
   mediaId: string,
   file: Express.Multer.File,
 ): Promise<ARMedia> {
+  if (!file) {
+    throw new ValidationError('No file uploaded');
+  }
+
   const basePath = `src/${routeId}/ar-media`;
   const allMedia = await getARMediaRecursive(basePath, basePath);
   const existingMedia = allMedia.find((item) => item.id === mediaId);
 
   if (!existingMedia) {
-    throw new Error('AR Media not found');
+    throw new NotFoundError(`AR Media not found: ${mediaId}`);
   }
 
   const path = `src/${routeId}/ar-media/${existingMedia.filename}`;
@@ -114,7 +123,7 @@ export async function deleteARMedia(routeId: string, mediaId: string): Promise<v
   const mediaToDelete = allMedia.find((item) => item.id === mediaId);
 
   if (!mediaToDelete) {
-    throw new Error('AR Media not found');
+    throw new NotFoundError(`AR Media not found: ${mediaId}`);
   }
 
   const path = `src/${routeId}/ar-media/${mediaToDelete.filename}`;
@@ -141,7 +150,7 @@ export async function deleteARMedia(routeId: string, mediaId: string): Promise<v
     const prDescription = generatePRDescription('Delete', 'AR Media', mediaToDelete.filename);
     await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
   } else {
-    throw new Error('AR Media not found');
+    throw new NotFoundError(`AR Media file not found: ${mediaToDelete.filename}`);
   }
 }
 

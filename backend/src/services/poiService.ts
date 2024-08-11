@@ -12,44 +12,52 @@ import {
   owner,
   repo,
 } from '@/utils/githubUtils';
+import { NotFoundError, ValidationError, ConflictError } from '@/utils/errorHandler';
 
 export async function getPOIsForRoute(routeId: string): Promise<POI[]> {
-  const { data: contents } = await octokit.repos.getContent({
-    owner,
-    repo,
-    path: `src/${routeId}`,
-  });
+  try {
+    const { data: contents } = await octokit.repos.getContent({
+      owner,
+      repo,
+      path: `src/${routeId}`,
+    });
 
-  if (!Array.isArray(contents)) {
-    throw new Error('Unexpected response structure');
+    if (!Array.isArray(contents)) {
+      throw new Error('Unexpected response structure');
+    }
+
+    const poiFiles = contents.filter(
+      (item) => item.type === 'file' && item.name.endsWith('.md') && item.name !== 'index.md',
+    );
+
+    const pois = await Promise.all(
+      poiFiles.map(async (file) => {
+        const { data } = await octokit.repos.getContent({
+          owner,
+          repo,
+          path: file.path,
+        });
+
+        if ('content' in data) {
+          const content = Buffer.from(data.content, 'base64').toString('utf8');
+          const { data: frontmatter, content: markdownContent } = matter(content);
+
+          return {
+            id: file.name.replace('.md', ''),
+            ...frontmatter,
+            content: markdownContent,
+          } as POI;
+        }
+      }),
+    );
+
+    return pois.filter((poi): poi is POI => poi !== undefined);
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`Route not found: ${routeId}`);
+    }
+    throw error;
   }
-
-  const poiFiles = contents.filter(
-    (item) => item.type === 'file' && item.name.endsWith('.md') && item.name !== 'index.md',
-  );
-
-  const pois = await Promise.all(
-    poiFiles.map(async (file) => {
-      const { data } = await octokit.repos.getContent({
-        owner,
-        repo,
-        path: file.path,
-      });
-
-      if ('content' in data) {
-        const content = Buffer.from(data.content, 'base64').toString('utf8');
-        const { data: frontmatter, content: markdownContent } = matter(content);
-
-        return {
-          id: file.name.replace('.md', ''),
-          ...frontmatter,
-          content: markdownContent,
-        } as POI;
-      }
-    }),
-  );
-
-  return pois.filter((poi): poi is POI => poi !== undefined);
 }
 
 export async function getPOIById(routeId: string, poiId: string): Promise<POI> {
@@ -66,20 +74,20 @@ export async function getPOIById(routeId: string, poiId: string): Promise<POI> {
       const { data: frontmatter, content: markdownContent } = matter(content);
       return { id: poiId, ...frontmatter, content: markdownContent } as POI;
     } else {
-      throw new Error('POI not found');
+      throw new NotFoundError(`POI not found: ${poiId}`);
     }
   } catch (error) {
     if (error instanceof Error && 'status' in error && error.status === 404) {
-      throw new Error('POI not found');
+      throw new NotFoundError(`POI not found: ${poiId}`);
     }
-    throw error; // Re-throw other errors
+    throw error;
   }
 }
 
 export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Promise<POI> {
   const validation = validatePOI(poiData);
   if (!validation.isValid) {
-    throw new Error(`Invalid POI data: ${validation.errors.join(', ')}`);
+    throw new ValidationError(`Invalid POI data: ${validation.errors.join(', ')}`);
   }
 
   const poiId = generatePoiId(poiData.title);
@@ -130,24 +138,19 @@ export async function updatePOI(
 
       // Check for changes
       const frontmatterChanges = detectChanges(existingFrontmatter, updatedPOI);
-
       const contentChanged = poiData.content && poiData.content !== existingMarkdownContent;
 
       // No changes detected
       if (!frontmatterChanges && !contentChanged) {
-        console.log('No changes detected. Skipping pull request creation.');
-        return updatedPOI as POI;
+        throw new ConflictError('No changes detected. Skipping update.');
       }
-
-      // Changes detected
-      console.log('Changes detected:', { frontmatterChanges, contentChanged });
 
       const validationResult = poiSchema.safeParse(updatedPOI);
       if (!validationResult.success) {
         const errorMessages = validationResult.error.issues.map(
           (issue) => `${issue.path.join('.')}: ${issue.message}`,
         );
-        throw new Error(`Invalid POI data: ${errorMessages.join(', ')}`);
+        throw new ValidationError(`Invalid POI data: ${errorMessages.join(', ')}`);
       }
 
       const updatedContent = matter.stringify(
@@ -178,42 +181,46 @@ export async function updatePOI(
       throw new Error('Unexpected response structure from GitHub API');
     }
   } catch (error) {
-    if (error instanceof Error) {
-      if ('status' in error && error.status === 404) {
-        throw new Error('POI not found');
-      }
-      throw error;
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`POI not found: ${poiId}`);
     }
-    throw new Error('An unknown error occurred while updating the POI');
+    throw error;
   }
 }
 
 export async function deletePOI(routeId: string, poiId: string): Promise<void> {
   const path = `src/${routeId}/${poiId}.md`;
-  const { data: file } = await octokit.repos.getContent({
-    owner,
-    repo,
-    path,
-  });
-
-  if ('sha' in file) {
-    const branchName = `delete-poi-${poiId}-${Date.now()}`;
-    await createBranch(branchName);
-
-    await octokit.repos.deleteFile({
+  try {
+    const { data: file } = await octokit.repos.getContent({
       owner,
       repo,
       path,
-      message: `${config.commitPrefix} Delete POI ${poiId}`,
-      sha: file.sha,
-      branch: branchName,
     });
 
-    const prTitle = generatePRTitle('Delete', 'POI', poiId);
-    const prDescription = generatePRDescription('Delete', 'POI', poiId);
-    await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
-  } else {
-    throw new Error('POI not found');
+    if ('sha' in file) {
+      const branchName = `delete-poi-${poiId}-${Date.now()}`;
+      await createBranch(branchName);
+
+      await octokit.repos.deleteFile({
+        owner,
+        repo,
+        path,
+        message: `${config.commitPrefix} Delete POI ${poiId}`,
+        sha: file.sha,
+        branch: branchName,
+      });
+
+      const prTitle = generatePRTitle('Delete', 'POI', poiId);
+      const prDescription = generatePRDescription('Delete', 'POI', poiId);
+      await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
+    } else {
+      throw new NotFoundError(`POI not found: ${poiId}`);
+    }
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`POI not found: ${poiId}`);
+    }
+    throw error;
   }
 }
 

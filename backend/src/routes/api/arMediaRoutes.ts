@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import * as arMediaController from '@/controllers/arMediaController';
-import { authMiddleware } from '@/middleware/auth';
+import { authMiddleware } from '@/middleware/authMiddleware';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });

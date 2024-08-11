@@ -5,6 +5,7 @@ dotenv.config();
 
 import { connectToDatabase } from './db/database';
 import apiRoutes from './routes';
+import { errorMiddleware } from './middleware/errorMiddleware';
 
 const app = express();
 const PORT = config.port;
@@ -12,6 +13,8 @@ const PORT = config.port;
 app.use(express.json());
 
 app.use('/api', apiRoutes);
+
+app.use(errorMiddleware);
 
 connectToDatabase()
   .then(() => {

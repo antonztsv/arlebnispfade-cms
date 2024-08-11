@@ -12,48 +12,62 @@ import {
   owner,
   repo,
 } from '@/utils/githubUtils';
+import { NotFoundError, ValidationError, ConflictError } from '@/utils/errorHandler';
 
 export async function getAllRoutes(): Promise<Route[]> {
-  const { data: contents } = await octokit.repos.getContent({
-    owner,
-    repo,
-    path: 'src',
-  });
+  try {
+    const { data: contents } = await octokit.repos.getContent({
+      owner,
+      repo,
+      path: 'src',
+    });
 
-  if (!Array.isArray(contents)) {
-    throw new Error('Unexpected response structure');
+    if (!Array.isArray(contents)) {
+      throw new Error('Unexpected response structure');
+    }
+
+    const routes: Route[] = await Promise.all(
+      contents
+        .filter((item) => item.type === 'dir' && config.currentRoutes.includes(item.name))
+        .map(async (item) => {
+          const routeMetadata = await getRouteMetadata(item.name);
+          return {
+            title: routeMetadata.title || item.name,
+            layout: routeMetadata.layout || '',
+            image: routeMetadata.image || '',
+            type: routeMetadata.type || '',
+          };
+        }),
+    );
+
+    return routes;
+  } catch (error) {
+    console.error('Error fetching all routes:', error);
+    throw error;
   }
-
-  const routes: Route[] = await Promise.all(
-    contents
-      .filter((item) => item.type === 'dir' && config.currentRoutes.includes(item.name))
-      .map(async (item) => {
-        const routeMetadata = await getRouteMetadata(item.name);
-        return {
-          title: routeMetadata.title || item.name,
-          layout: routeMetadata.layout || '',
-          image: routeMetadata.image || '',
-          type: routeMetadata.type || '',
-        };
-      }),
-  );
-
-  return routes;
 }
 
 export async function getRouteById(routeId: string): Promise<Route> {
-  const routeMetadata = await getRouteMetadata(routeId);
+  try {
+    const routeMetadata = await getRouteMetadata(routeId);
 
-  if (!routeMetadata.title) {
-    throw new Error(`Route not found: ${routeId}`);
+    if (!routeMetadata.title) {
+      throw new NotFoundError(`Route not found: ${routeId}`);
+    }
+
+    return {
+      title: routeMetadata.title,
+      layout: routeMetadata.layout || '',
+      image: routeMetadata.image || '',
+      type: routeMetadata.type || '',
+    };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    console.error(`Error fetching route ${routeId}:`, error);
+    throw error;
   }
-
-  return {
-    title: routeMetadata.title,
-    layout: routeMetadata.layout || '',
-    image: routeMetadata.image || '',
-    type: routeMetadata.type || '',
-  };
 }
 
 export async function updateRoute(routeId: string, routeData: Partial<Route>): Promise<Route> {
@@ -84,17 +98,12 @@ export async function updateRoute(routeId: string, routeData: Partial<Route>): P
     const hasChanges = detectChanges(existingFrontmatter, updatedRoute);
 
     if (!hasChanges) {
-      // No changes detected
-      console.log('No changes detected. Skipping pull request creation.');
-      return updatedRoute;
+      throw new ConflictError('No changes detected. Skipping update.');
     }
-
-    // Changes detected
-    console.log('Changes detected:', routeData);
 
     const validation = validateRoute(updatedRoute);
     if (!validation.isValid) {
-      throw new Error(`Invalid route data: ${validation.errors.join(', ')}`);
+      throw new ValidationError(`Invalid route data: ${validation.errors.join(', ')}`);
     }
 
     const updatedContent = matter.stringify(existingMarkdownContent, updatedRoute);
@@ -116,13 +125,18 @@ export async function updateRoute(routeId: string, routeData: Partial<Route>): P
 
     return updatedRoute;
   } catch (error) {
-    if (error instanceof Error) {
-      if ('status' in error && error.status === 404) {
-        throw new Error(`Route not found: ${routeId}`);
-      }
+    if (
+      error instanceof NotFoundError ||
+      error instanceof ValidationError ||
+      error instanceof ConflictError
+    ) {
       throw error;
     }
-    throw new Error('An unknown error occurred');
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`Route not found: ${routeId}`);
+    }
+    console.error(`Error updating route ${routeId}:`, error);
+    throw error;
   }
 }
 
@@ -153,13 +167,11 @@ async function getRouteMetadata(routeId: string): Promise<{
       type: frontmatter.type,
     };
   } catch (error) {
-    if (error instanceof Error) {
-      if ('status' in error && error.status === 404) {
-        throw new Error(`Route not found: ${routeId}`);
-      }
-      throw error;
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`Route not found: ${routeId}`);
     }
-    throw new Error('An unknown error occurred');
+    console.error(`Error fetching route metadata for ${routeId}:`, error);
+    throw error;
   }
 }
 

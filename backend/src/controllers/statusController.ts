@@ -1,6 +1,6 @@
-import { RequestHandler } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
-export const getStatus: RequestHandler = async (req, res, next) => {
+export async function getStatus(req: Request, res: Response, next: NextFunction) {
   try {
     res.json({
       message: 'API is online',
@@ -9,4 +9,4 @@ export const getStatus: RequestHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}

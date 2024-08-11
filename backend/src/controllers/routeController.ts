@@ -1,43 +1,47 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as routeService from '@/services/routeService';
+import { NotFoundError, ValidationError } from '@/utils/errorHandler';
 
-export async function getAllRoutes(req: Request, res: Response) {
+export async function getAllRoutes(req: Request, res: Response, next: NextFunction) {
   try {
     const routes = await routeService.getAllRoutes();
     res.json(routes);
   } catch (error) {
-    console.error('Error in getAllRoutes:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    next(error);
   }
 }
 
-export async function getRouteById(req: Request, res: Response) {
+export async function getRouteById(req: Request, res: Response, next: NextFunction) {
   try {
     const { routeId } = req.params;
     const route = await routeService.getRouteById(routeId);
     res.json(route);
   } catch (error) {
-    console.error('Error in getRouteById:', error);
     if (error instanceof Error && error.message.includes('Route not found')) {
-      res.status(404).json({ error: 'Route not found' });
+      next(new NotFoundError(`Route with id ${req.params.routeId} not found`));
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      next(error);
     }
   }
 }
 
-export async function updateRoute(req: Request, res: Response) {
+export async function updateRoute(req: Request, res: Response, next: NextFunction) {
   try {
     const { routeId } = req.params;
     const routeData = req.body;
     const updatedRoute = await routeService.updateRoute(routeId, routeData);
     res.json({ message: 'Route updated successfully', route: updatedRoute });
   } catch (error) {
-    console.error('Error in updateRoute:', error);
-    if (error instanceof Error && error.message.includes('Route not found')) {
-      res.status(404).json({ error: 'Route not found' });
+    if (error instanceof Error) {
+      if (error.message.includes('Route not found')) {
+        next(new NotFoundError(`Route with id ${req.params.routeId} not found`));
+      } else if (error.message.includes('Invalid route data')) {
+        next(new ValidationError(error.message));
+      } else {
+        next(error);
+      }
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      next(error);
     }
   }
 }

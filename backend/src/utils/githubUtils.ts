@@ -1,6 +1,7 @@
 import config from '@/config';
 import { Octokit } from '@octokit/rest';
 import { isDeepEqual } from 'remeda';
+import { NotFoundError, ValidationError } from '@/utils/errorHandler';
 
 const octokit = new Octokit({
   auth: config.githubPersonalAccessToken,
@@ -13,13 +14,20 @@ export const owner = config.githubRepoOwner;
 export const repo = config.githubRepoName;
 
 export async function createBranch(branchName: string): Promise<void> {
-  const { data: ref } = await octokit.git.getRef({ owner, repo, ref: 'heads/main' });
-  await octokit.git.createRef({
-    owner,
-    repo,
-    ref: `refs/heads/${branchName}`,
-    sha: ref.object.sha,
-  });
+  try {
+    const { data: ref } = await octokit.git.getRef({ owner, repo, ref: 'heads/main' });
+    await octokit.git.createRef({
+      owner,
+      repo,
+      ref: `refs/heads/${branchName}`,
+      sha: ref.object.sha,
+    });
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError('Main branch not found');
+    }
+    throw error;
+  }
 }
 
 export async function createOrUpdateFile(
@@ -29,15 +37,31 @@ export async function createOrUpdateFile(
   branch: string,
   sha?: string,
 ): Promise<void> {
-  await octokit.repos.createOrUpdateFileContents({
-    owner,
-    repo,
-    path,
-    message,
-    content: Buffer.from(content).toString('base64'),
-    branch,
-    ...(sha && { sha }),
-  });
+  if (!path || !content || !message || !branch) {
+    throw new ValidationError('Missing required parameters for creating or updating file');
+  }
+
+  try {
+    await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path,
+      message,
+      content: Buffer.from(content).toString('base64'),
+      branch,
+      ...(sha && { sha }),
+    });
+  } catch (error) {
+    if (error instanceof Error && 'status' in error) {
+      if (error.status === 404) {
+        throw new NotFoundError(`File or branch not found: ${path}`);
+      }
+      if (error.status === 422) {
+        throw new ValidationError('Invalid file content or branch name');
+      }
+    }
+    throw error;
+  }
 }
 
 export function generatePRTitle(action: string, itemType: string, itemId: string): string {

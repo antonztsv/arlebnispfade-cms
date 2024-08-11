@@ -1,29 +1,28 @@
 import config from '@/config';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from '@/models/User';
 import { userSchema, loginSchema, UserInput, LoginInput } from '@/schemas/authSchema';
-import dotenv from 'dotenv';
-dotenv.config();
+import { ValidationError, UnauthorizedError } from '@/utils/errorHandler';
 
 if (!config.jwtSecret) {
   throw new Error('JWT_SECRET must be set in .env');
 }
 const JWT_SECRET = config.jwtSecret;
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = userSchema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json({ message: 'Invalid input', errors: result.error.errors });
+      throw new ValidationError(result.error.message);
     }
 
     const { username, password, role } = result.data as UserInput;
 
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({ message: 'Username already exists' });
+      throw new ValidationError('Username already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,16 +35,15 @@ export const register = async (req: Request, res: Response) => {
     await newUser.save();
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
-    console.error('Error in register:', error);
-    res.status(500).json({ message: 'Error registering user' });
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = loginSchema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json({ message: 'Invalid input', errors: result.error.errors });
+      throw new ValidationError(result.error.message);
     }
 
     const { username, password } = result.data as LoginInput;
@@ -61,10 +59,9 @@ export const login = async (req: Request, res: Response) => {
       );
       res.json({ token });
     } else {
-      res.status(401).json({ message: 'Invalid credentials' });
+      throw new UnauthorizedError('Invalid credentials');
     }
   } catch (error) {
-    console.error('Error in login:', error);
-    res.status(500).json({ message: 'Error logging in' });
+    next(error);
   }
 };
