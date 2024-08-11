@@ -44,7 +44,7 @@ export async function getARMediaById(routeId: string, mediaId: string): Promise<
 }
 
 export async function createARMedia(routeId: string, file: Express.Multer.File): Promise<ARMedia> {
-  const filename = `${Date.now()}-${file.originalname}`;
+  const filename = file.originalname;
   const path = `src/${routeId}/ar-media/${filename}`;
   const content = file.buffer.toString('base64');
 
