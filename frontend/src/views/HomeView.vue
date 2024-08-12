@@ -1,48 +1,73 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { fetchRoutes, Route } from '@/api/routes';
+import { fetchPullRequests, PullRequest } from '@/api/pullRequests';
+
+const router = useRouter();
+const routes = ref<Route[]>([]);
+const pullRequests = ref<PullRequest[]>([]);
+const displayedPullRequests = ref(3);
+
+onMounted(async () => {
+  try {
+    routes.value = await fetchRoutes();
+    pullRequests.value = await fetchPullRequests();
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
+
+const navigateToPOIs = (routeId: string) => {
+  router.push({ name: 'pois', params: { routeId } });
+};
+
+const showMorePullRequests = () => {
+  displayedPullRequests.value += 3;
+};
+</script>
 
 <template>
-  <div class="container mx-auto px-5">
-    <h1 class="mb-5 font-headline text-3xl font-bold">Tailwind Test</h1>
-
-    <!-- Basic 3-column layout -->
-    <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div class="bg-blue-200 p-4">Column 1</div>
-      <div class="bg-green-200 p-4">Column 2</div>
-      <div class="bg-blue-200 p-4">Column 3</div>
-    </div>
-
-    <!-- Responsive layout with different column spans -->
-    <div class="mb-8 grid grid-cols-4 gap-4">
-      <div class="col-span-4 bg-yellow-300 p-4 md:col-span-2">Span 4 (2 on md+)</div>
-      <div class="col-span-2 bg-blue-500 p-4 text-white md:col-span-1">Span 2 (1 on md+)</div>
-      <div class="col-span-2 bg-red-500 p-4 text-white md:col-span-1">Span 2 (1 on md+)</div>
-    </div>
-
-    <!-- Complex layout example -->
-    <div class="mb-8 grid grid-cols-6 gap-2">
-      <div class="col-span-6 bg-gray-500 p-4 text-white md:col-span-4">Main Content</div>
-      <div class="col-span-3 bg-blue-200 p-4 md:col-span-2">Sidebar 1</div>
-      <div class="col-span-3 bg-green-200 p-4 md:col-span-2">Sidebar 2</div>
-    </div>
-
-    <!-- Nested grid example -->
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <div>
-        <div class="mb-4 bg-blue-500 p-4 text-white">Nested Parent 1</div>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="bg-blue-200 p-4">Nested Child 1</div>
-          <div class="bg-green-200 p-4">Nested Child 2</div>
+  <div>
+    <section class="mb-12">
+      <h2 class="mb-4 font-headline text-3xl font-bold">
+        <span class="pi pi-map mr-3 text-2xl"></span>Routen
+      </h2>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div
+          v-for="route in routes"
+          :key="route.id"
+          class="cursor-pointer rounded bg-gray-100 p-4 shadow"
+          @click="navigateToPOIs(route.id)"
+        >
+          <h3 class="text-lg">{{ route.title }}</h3>
+          <p>{{ route.description }}</p>
         </div>
       </div>
-      <div>
-        <div class="mb-4 bg-red-500 p-4 text-white">Nested Parent 2</div>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="bg-blue-200 p-4">Nested Child 3</div>
-          <div class="bg-green-200 p-4">Nested Child 4</div>
+    </section>
+
+    <section>
+      <h2 class="mb-4 font-headline text-3xl font-bold">
+        <span class="pi pi-arrow-right-arrow-left mr-3 text-2xl"></span>Änderungen
+      </h2>
+      <div class="space-y-4">
+        <div
+          v-for="pr in pullRequests.slice(0, displayedPullRequests)"
+          :key="pr.id"
+          class="cursor-pointer rounded bg-gray-100 p-4 shadow"
+        >
+          <h3 class="text-lg">{{ pr.title }}</h3>
+
+          <p>{{ pr.description }}</p>
         </div>
       </div>
-    </div>
+      <button
+        v-if="displayedPullRequests < pullRequests.length"
+        @click="showMorePullRequests"
+        class="mt-4 rounded bg-blue-500 px-4 py-2 text-black"
+      >
+        Mehr anzeigen
+      </button>
+    </section>
   </div>
 </template>
-
-<style scoped></style>

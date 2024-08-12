@@ -1,27 +1,45 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
-import AboutView from '@/views/AboutView.vue'
-import NotFoundView from '@/views/NotFoundView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import NotFoundView from '@/views/NotFoundView.vue';
+import HomeView from '@/views/HomeView.vue';
+import LoginView from '@/views/LoginView.vue';
+import POIsView from '@/views/POIsView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: HomeView
+      path: '/login',
+      name: 'login',
+      component: LoginView,
     },
     {
-      path: '/about',
-      name: 'about',
-      component: AboutView
+      path: '/',
+      name: 'home',
+      component: HomeView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/routes/:routeId/pois',
+      name: 'pois',
+      component: POIsView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: NotFoundView
-    }
-  ]
-})
+      redirect: '/',
+    },
+  ],
+});
 
-export default router
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isAuthenticated) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+
+export default router;

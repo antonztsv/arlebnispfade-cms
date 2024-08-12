@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <p>This is an about page</p>
+  <div>
+    <h1>POI Name</h1>
+  </div>
 </template>
-
-<style></style>
