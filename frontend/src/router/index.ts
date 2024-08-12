@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth';
 import HomeView from '@/views/HomeView.vue';
 import LoginView from '@/views/LoginView.vue';
 import POIsView from '@/views/POIsView.vue';
+import POIDetail from '@/components/POIDetail.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +24,13 @@ const router = createRouter({
       name: 'pois',
       component: POIsView,
       meta: { requiresAuth: true },
+      children: [
+        {
+          path: ':poiId',
+          name: 'poi-detail',
+          component: POIDetail,
+        },
+      ],
     },
     {
       path: '/:pathMatch(.*)*',
