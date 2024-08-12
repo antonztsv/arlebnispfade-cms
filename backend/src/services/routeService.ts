@@ -32,6 +32,7 @@ export async function getAllRoutes(): Promise<Route[]> {
         .map(async (item) => {
           const routeMetadata = await getRouteMetadata(item.name);
           return {
+            id: item.name,
             title: routeMetadata.title || item.name,
             layout: routeMetadata.layout || '',
             image: routeMetadata.image || '',
@@ -56,6 +57,7 @@ export async function getRouteById(routeId: string): Promise<Route> {
     }
 
     return {
+      id: routeId,
       title: routeMetadata.title,
       layout: routeMetadata.layout || '',
       image: routeMetadata.image || '',
@@ -70,7 +72,10 @@ export async function getRouteById(routeId: string): Promise<Route> {
   }
 }
 
-export async function updateRoute(routeId: string, routeData: Partial<Route>): Promise<Route> {
+export async function updateRoute(
+  routeId: string,
+  routeData: Partial<Omit<Route, 'id'>>,
+): Promise<Route> {
   const path = `src/${routeId}/index.md`;
 
   try {
@@ -123,7 +128,10 @@ export async function updateRoute(routeId: string, routeData: Partial<Route>): P
     const prDescription = generatePRDescription('Update', 'Route', updatedRoute.title || routeId);
     await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
-    return updatedRoute;
+    return {
+      id: routeId,
+      ...updatedRoute,
+    };
   } catch (error) {
     if (
       error instanceof NotFoundError ||
