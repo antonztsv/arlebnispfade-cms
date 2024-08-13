@@ -1,10 +1,12 @@
 import { API_BASE_URL, authenticatedFetch } from './config';
 
-export interface Route {
+export type Route = {
   id: string;
   title: string;
-  description: string;
-}
+  layout: string;
+  image: string;
+  type: string;
+};
 
 export async function fetchRoutes(): Promise<Route[]> {
   const response = await authenticatedFetch(`${API_BASE_URL}/routes`);

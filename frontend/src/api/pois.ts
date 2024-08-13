@@ -1,6 +1,6 @@
 import { API_BASE_URL, authenticatedFetch } from './config';
 
-export interface POI {
+export type POI = {
   id: string;
   title: string;
   image: string;
@@ -10,7 +10,7 @@ export interface POI {
   info: string;
   arDesc: string;
   content?: string;
-}
+};
 
 export async function fetchPOIsForRoute(routeId: string): Promise<POI[]> {
   const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}/pois`);

@@ -27,7 +27,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
     <div class="w-full max-w-md space-y-8">
       <div>
         <h2 class="mt-6 text-center font-headline text-3xl font-extrabold text-gray-900">
