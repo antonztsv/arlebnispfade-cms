@@ -20,7 +20,7 @@ const toggleMenu = () => {
 <template>
   <header class="bg-blue-600 py-4 text-white">
     <nav class="container mx-auto flex items-center justify-between px-4">
-      <RouterLink to="/" class="font-headline text-xl font-bold hover:text-gray-100"
+      <RouterLink to="/" class="font-headline text-xl font-bold hover:text-gray-200"
         >ARlebnispfade OBK</RouterLink
       >
 
@@ -53,6 +53,11 @@ const toggleMenu = () => {
     <!-- Mobile Menu -->
     <div v-if="isMenuOpen" class="container mx-auto pt-3 md:hidden">
       <div class="space-y-1 px-2 pb-3 pt-2">
+        <RouterLink
+          to="/assets"
+          class="block rounded px-3 py-2 hover:bg-blue-700 active:bg-blue-800"
+          >Assets</RouterLink
+        >
         <RouterLink
           to="/routes"
           class="block rounded px-3 py-2 hover:bg-blue-700 active:bg-blue-800"

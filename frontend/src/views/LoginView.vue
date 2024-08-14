@@ -63,7 +63,7 @@ const handleSubmit = async () => {
         <div>
           <button
             type="submit"
-            class="w-full rounded border border-transparent bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 active:bg-blue-800"
+            class="w-full rounded border border-transparent bg-blue-500 px-4 py-3 text-sm font-medium text-white hover:bg-blue-600 active:bg-blue-700"
           >
             Anmelden
           </button>

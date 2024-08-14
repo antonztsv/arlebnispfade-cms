@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { fetchPullRequests, PullRequest } from '@/api/pullRequests';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import PullRequestCard from '@/components/PullRequestCard.vue';
+import ListTitle from '@/components/ListTitle.vue';
 
 const pullRequests = ref<PullRequest[]>([]);
 const loading = ref(true);
@@ -27,12 +28,7 @@ onMounted(async () => {
 
 <template>
   <section>
-    <RouterLink to="/changes">
-      <h2 class="mb-4 inline-block font-headline text-3xl font-bold hover:text-gray-600">
-        Änderungen
-        <span v-if="!loading" class="text-sm text-gray-500">({{ pullRequests.length }})</span>
-      </h2>
-    </RouterLink>
+    <ListTitle title="Änderungen" to="/changes" :loading :count="pullRequests.length" />
     <LoadingSpinner v-if="loading" />
     <div v-else class="space-y-4">
       <PullRequestCard
