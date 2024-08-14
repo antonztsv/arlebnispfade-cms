@@ -6,11 +6,10 @@ const authStore = useAuthStore();
 </script>
 
 <template>
-  <div v-if="authStore.isAuthenticated" class="flex flex-col">
-    <Header />
-    <main class="container mx-auto flex-grow px-5 pt-12">
+  <div class="min-h-screen bg-gray-50 text-gray-900">
+    <Header v-if="authStore.isAuthenticated" />
+    <main class="container mx-auto px-4 py-12">
       <RouterView />
     </main>
   </div>
-  <RouterView v-else />
 </template>

@@ -62,7 +62,7 @@ const toggleMenu = () => {
         >
         <button
           @click="logout"
-          class="flex w-full justify-between rounded px-3 py-2 text-left hover:bg-red-800"
+          class="flex w-full justify-between rounded px-3 py-2 text-left hover:bg-red-500"
         >
           Abmelden
         </button>
