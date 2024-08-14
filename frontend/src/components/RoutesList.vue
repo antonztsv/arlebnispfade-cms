@@ -7,6 +7,12 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const router = useRouter();
 const routes = ref<Route[]>([]);
 const loading = ref(true);
+const props = defineProps({
+  filter: {
+    type: Number,
+    default: 3,
+  },
+});
 
 onMounted(async () => {
   loading.value = true;
@@ -27,13 +33,16 @@ const navigateToPOIs = (routeId: string) => {
 <template>
   <section class="mb-12">
     <RouterLink to="/routes">
-      <h2 class="mb-4 inline-block font-headline text-3xl font-bold hover:text-gray-600">Routen</h2>
+      <h2 class="mb-4 inline-block font-headline text-3xl font-bold hover:text-gray-600">
+        Routen
+        <span v-if="!loading" class="text-sm text-gray-500">({{ routes.length }})</span>
+      </h2>
     </RouterLink>
     <LoadingSpinner v-if="loading" />
     <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-3">
       <RouterLink
         :to="{ name: 'pois', params: { routeId: route.id } }"
-        v-for="route in routes.slice(0, 3)"
+        v-for="route in routes.slice(0, props.filter)"
         :key="route.id"
         class="route-card cursor-pointer overflow-hidden rounded-lg shadow-lg"
         @click="navigateToPOIs(route.id)"

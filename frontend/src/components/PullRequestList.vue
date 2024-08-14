@@ -5,6 +5,12 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const pullRequests = ref<PullRequest[]>([]);
 const loading = ref(true);
+const props = defineProps({
+  filter: {
+    type: Number,
+    default: 6,
+  },
+});
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('de-DE', {
@@ -33,15 +39,16 @@ onMounted(async () => {
     <RouterLink to="/changes">
       <h2 class="mb-4 inline-block font-headline text-3xl font-bold hover:text-gray-600">
         Änderungen
+        <span v-if="!loading" class="text-sm text-gray-500">({{ pullRequests.length }})</span>
       </h2>
     </RouterLink>
     <LoadingSpinner v-if="loading" />
     <div v-else class="space-y-4">
       <RouterLink
         :to="`/changes/${pr.number}`"
-        v-for="pr in pullRequests.slice(0, 3)"
+        v-for="pr in pullRequests.slice(0, props.filter)"
         :key="pr.id"
-        class="changes-card flex justify-between rounded-lg bg-gray-50 p-4 py-6 shadow-lg transition-colors hover:bg-gray-100"
+        class="changes-card flex justify-between rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4 py-6 transition-colors hover:bg-gray-200"
       >
         <div>
           <h3 class="font-semibold">
