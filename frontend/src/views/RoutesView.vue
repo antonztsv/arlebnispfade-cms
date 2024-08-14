@@ -3,5 +3,5 @@ import RoutesList from '@/components/RoutesList.vue';
 </script>
 
 <template>
-  <RoutesList />
+  <RoutesList :gridCols="1" />
 </template>

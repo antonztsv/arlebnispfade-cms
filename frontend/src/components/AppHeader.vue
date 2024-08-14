@@ -26,6 +26,9 @@ const toggleMenu = () => {
 
       <!-- Desktop Menu -->
       <div class="hidden items-center space-x-4 md:flex">
+        <RouterLink to="/assets" class="rounded px-4 py-2 hover:bg-blue-700 active:bg-blue-800"
+          >Assets</RouterLink
+        >
         <RouterLink to="/routes" class="rounded px-4 py-2 hover:bg-blue-700 active:bg-blue-800"
           >Routen</RouterLink
         >
