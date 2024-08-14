@@ -5,7 +5,7 @@ import PullRequestList from '@/components/PullRequestList.vue';
 
 <template>
   <div>
-    <RoutesList />
-    <PullRequestList />
+    <RoutesList :filter="3" />
+    <PullRequestList :filter="6" />
   </div>
 </template>
