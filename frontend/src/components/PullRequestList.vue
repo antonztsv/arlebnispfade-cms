@@ -18,6 +18,10 @@ const props = defineProps({
 });
 
 onMounted(async () => {
+  await loadPullRequests();
+});
+
+const loadPullRequests = async () => {
   loading.value = true;
   try {
     pullRequests.value = await fetchPullRequests();
@@ -26,7 +30,15 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+};
+
+const removePullRequest = (prNumber: number) => {
+  pullRequests.value = pullRequests.value.filter((pr) => pr.number !== prNumber);
+};
+
+const handlePrUpdated = (prNumber: number) => {
+  removePullRequest(prNumber);
+};
 </script>
 
 <template>
@@ -38,7 +50,8 @@ onMounted(async () => {
         v-for="pr in filter ? pullRequests.slice(0, props.filter) : pullRequests"
         :key="pr.id"
         :pull-request="pr"
-        :detailed
+        :detailed="detailed"
+        @pr-updated="handlePrUpdated"
       />
     </div>
   </section>

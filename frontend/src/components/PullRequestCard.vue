@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { computed, PropType } from 'vue';
+import { PropType, ref } from 'vue';
 import { PullRequest } from '@/api/pullRequests';
+import { mergePullRequest, closePullRequest } from '@/api/pullRequests';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
+
+const loading = ref(false);
 
 defineProps({
   pullRequest: {
@@ -13,6 +20,8 @@ defineProps({
   },
 });
 
+const emit = defineEmits(['prUpdated']);
+
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('de-DE', {
     year: 'numeric',
@@ -22,16 +31,43 @@ const formatDate = (dateString: string) => {
     minute: '2-digit',
   });
 };
+
+const mergePR = async (pullRequestNumber: number) => {
+  loading.value = true;
+  try {
+    await mergePullRequest(pullRequestNumber);
+    toast.success('Änderung erfolgreich angenommen');
+    emit('prUpdated', pullRequestNumber);
+  } catch (error) {
+    console.error('Error merging pull request:', error);
+    toast.error('Fehler beim Annehmen der Änderung');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const closePR = async (pullRequestNumber: number) => {
+  loading.value = true;
+  try {
+    await closePullRequest(pullRequestNumber);
+    toast.success('Änderung erfolgreich gelöscht');
+    emit('prUpdated', pullRequestNumber);
+  } catch (error) {
+    console.error('Error closing pull request:', error);
+    toast.error('Fehler beim Löschen der Änderung');
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
   <!-- normal view -->
   <RouterLink
     v-if="!detailed"
-    :to="`/changes/${pullRequest.number}`"
+    to="/changes"
     class="changes-card flex justify-between rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4 py-6 transition-colors hover:bg-gray-200"
   >
-    <!-- <div class="flex justify-between"> -->
     <div>
       <h3 class="font-semibold">
         <span class="text-gray-500">#{{ pullRequest.number }}</span>
@@ -47,7 +83,6 @@ const formatDate = (dateString: string) => {
     >
       <span class="pi pi-arrow-right-arrow-left text-lg"></span>
     </div>
-    <!-- </div> -->
   </RouterLink>
 
   <!-- detailed view -->
@@ -55,46 +90,63 @@ const formatDate = (dateString: string) => {
     v-else
     class="changes-card rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4 py-6 transition-colors"
   >
-    <div class="flex justify-between">
-      <div>
-        <h3 class="font-semibold">
-          <span class="text-gray-500">#{{ pullRequest.number }}</span>
-          {{ pullRequest.title }}
-        </h3>
+    <LoadingSpinner v-if="loading" />
+    <div v-else>
+      <div class="flex justify-between">
+        <div>
+          <h3 class="font-semibold">
+            <span class="text-gray-500">#{{ pullRequest.number }}</span>
+            {{ pullRequest.title }}
+          </h3>
 
-        <p class="text-sm text-gray-500">
-          {{ formatDate(pullRequest.created_at) }}
-        </p>
+          <p class="text-sm text-gray-500">
+            {{ formatDate(pullRequest.created_at) }}
+          </p>
+        </div>
+        <div
+          class="self-center rounded-md transition-transform duration-300 ease-in-out hover:bg-gray-100"
+        >
+          <span class="pi pi-arrow-right-arrow-left text-lg"></span>
+        </div>
       </div>
-      <div
-        class="self-center rounded-md transition-transform duration-300 ease-in-out hover:bg-gray-100"
-      >
-        <span class="pi pi-arrow-right-arrow-left text-lg"></span>
-      </div>
-    </div>
-    <div v-if="detailed">
-      <hr class="my-4 h-px border-0 bg-gray-300" />
-      <!-- https://flowbite.com/docs/typography/hr/ -->
       <div>
-        <p>{{ pullRequest.files[0].filename }}</p>
-      </div>
-      <div class="mt-4">
-        <a
-          :href="`${pullRequest.html_url}/files`"
-          target="_blank"
-          title="Auf Github anzeigen"
-          class="mr-2 rounded bg-gray-900 px-4 py-[10px] text-white hover:bg-gray-700"
-        >
-          <span class="pi pi-github"></span>
-        </a>
-        <button
-          class="mr-2 rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700"
-        >
-          Annehmen
-        </button>
-        <button class="mr-2 rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-blue-700">
-          Ablehnen
-        </button>
+        <hr class="my-4 h-px border-0 bg-gray-300" />
+        <!-- https://flowbite.com/docs/typography/hr/ -->
+        <div>
+          <p>{{ pullRequest.files[0].filename }}</p>
+        </div>
+        <div class="mt-4 flex">
+          <a
+            :href="`${pullRequest.html_url}/files`"
+            target="_blank"
+            title="Auf Github anzeigen"
+            class="mr-2 rounded bg-gray-900 px-4 py-[10px] text-white hover:bg-gray-700 active:bg-gray-800"
+          >
+            <span class="pi pi-github"></span>
+          </a>
+          <button
+            :class="[
+              'mr-2 rounded bg-blue-500 p-2 px-4 text-white disabled:text-gray-200',
+              { 'cursor-not-allowed': loading },
+              { 'hover:bg-blue-600 active:bg-blue-700': !loading },
+            ]"
+            @click="mergePR(pullRequest.number)"
+            :disabled="loading"
+          >
+            Annehmen
+          </button>
+          <button
+            :class="[
+              'mr-2 rounded bg-gray-200 p-2 px-4 disabled:text-gray-400',
+              { 'cursor-not-allowed': loading },
+              { 'hover:bg-gray-300 active:bg-gray-400': !loading },
+            ]"
+            @click="closePR(pullRequest.number)"
+            :disabled="loading"
+          >
+            Löschen
+          </button>
+        </div>
       </div>
     </div>
   </div>

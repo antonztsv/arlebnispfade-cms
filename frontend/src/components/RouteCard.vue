@@ -72,7 +72,7 @@ const saveChanges = async () => {
     </div>
   </RouterLink>
 
-  <div v-else-if="editable" class="grid grid-cols-1 md:grid-cols-2">
+  <div v-else class="grid grid-cols-1 md:grid-cols-2">
     <RouterLink
       :to="{ name: 'pois', params: { routeId: route.id } }"
       class="route-card overflow-hidden rounded-lg rounded-b-none md:rounded-b-lg lg:rounded-b-lg"
