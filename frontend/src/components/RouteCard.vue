@@ -27,6 +27,11 @@ const imageUrl = computed(
     `https://raw.githubusercontent.com/${import.meta.env.VITE_GH_OWNER}/${import.meta.env.VITE_GH_REPO}/main/src/${props.route.id}/images/small/${props.route.image}`,
 );
 
+const cardLink = computed(() => ({
+  name: 'route-detail',
+  params: { routeId: props.route.id },
+}));
+
 const toggleEdit = () => {
   if (isEditing.value) {
     editedRoute.value = { ...props.route };
@@ -54,11 +59,7 @@ const saveChanges = async () => {
 
 <template>
   <!-- Card on Home -->
-  <RouterLink
-    v-if="!editable"
-    :to="{ name: 'pois', params: { routeId: route.id } }"
-    class="route-card overflow-hidden rounded-lg"
-  >
+  <RouterLink v-if="!editable" :to="cardLink" class="route-card overflow-hidden rounded-lg">
     <div class="relative h-64 overflow-hidden">
       <div
         class="absolute inset-0 bg-cover bg-center transition-transform duration-300 ease-in-out"
@@ -81,7 +82,7 @@ const saveChanges = async () => {
   <!-- Card on View -->
   <div v-else class="grid grid-cols-1 md:grid-cols-2">
     <RouterLink
-      :to="{ name: 'pois', params: { routeId: route.id } }"
+      :to="cardLink"
       class="route-card overflow-hidden rounded-lg rounded-b-none md:rounded-b-lg lg:rounded-b-lg"
     >
       <div class="relative h-full min-h-64 overflow-hidden">

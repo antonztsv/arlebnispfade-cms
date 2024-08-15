@@ -2,11 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import HomeView from '@/views/HomeView.vue';
 import LoginView from '@/views/LoginView.vue';
-import POIsView from '@/views/POIsView.vue';
 import POIDetailView from '@/views/POIDetailView.vue';
 import RoutesView from '@/views/RoutesView.vue';
 import ChangesView from '@/views/ChangesView.vue';
-import AssetsView from '@/views/AssetsView.vue';
+import RouteDetailView from '@/views/RouteDetailView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,9 +28,9 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/routes/:routeId/pois',
-      name: 'pois',
-      component: POIsView,
+      path: '/routes/:routeId/',
+      name: 'route-detail',
+      component: RouteDetailView,
       meta: { requiresAuth: true },
     },
     {
@@ -44,12 +43,6 @@ const router = createRouter({
       path: '/changes',
       name: 'changes',
       component: ChangesView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/assets',
-      name: 'assets',
-      component: AssetsView,
       meta: { requiresAuth: true },
     },
     {

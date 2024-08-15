@@ -16,8 +16,8 @@ export async function fetchRoutes(): Promise<Route[]> {
   return response.json();
 }
 
-export async function fetchRoute(id: string): Promise<Route> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/routes/${id}`);
+export async function fetchRoute(routeId: string): Promise<Route> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch route');
   }
