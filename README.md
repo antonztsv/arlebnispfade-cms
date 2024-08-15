@@ -6,6 +6,8 @@ Ein Projekt zur redaktionellen Verwaltung von Augmented Reality (AR) Inhalten f�
 
 Diese Webanwendung ermöglicht die einfache Integration und Verwaltung von AR-Inhalten wie Texte, Bilder, Audio, Video, 3D-Modelle und Geolocation-Daten. Sie wird im Rahmen einer Bachelorarbeit an der TH Köln entwickelt.
 
+![ARlebnispfade OBK - CMS](screenshot.png)
+
 ## Struktur
 
 Das Projekt besteht aus zwei Hauptkomponenten:
