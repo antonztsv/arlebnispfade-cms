@@ -2,6 +2,9 @@
 import { computed, PropType, ref } from 'vue';
 import { updateRoute, Route } from '@/api/routes';
 import LoadingSpinner from './LoadingSpinner.vue';
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
 
 const props = defineProps({
   route: {
@@ -38,9 +41,11 @@ const saveChanges = async () => {
   try {
     await updateRoute(editedRoute.value);
     isEditing.value = false;
+    toast.success('Änderungen erfolgreich gespeichert');
   } catch (err) {
     error.value = 'Fehler beim Speichern der Änderungen. Bitte versuchen Sie es erneut.';
     console.error('Error updating route:', err);
+    toast.error('Fehler beim Speichern der Änderungen');
   } finally {
     isSaving.value = false;
   }
