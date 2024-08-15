@@ -26,9 +26,6 @@ const toggleMenu = () => {
 
       <!-- Desktop Menu -->
       <div class="hidden items-center space-x-4 md:flex">
-        <RouterLink to="/assets" class="rounded px-4 py-2 hover:bg-blue-700 active:bg-blue-800"
-          >Assets</RouterLink
-        >
         <RouterLink to="/routes" class="rounded px-4 py-2 hover:bg-blue-700 active:bg-blue-800"
           >Routen</RouterLink
         >
@@ -53,11 +50,6 @@ const toggleMenu = () => {
     <!-- Mobile Menu -->
     <div v-if="isMenuOpen" class="container mx-auto pt-3 md:hidden">
       <div class="space-y-1 px-2 pb-3 pt-2">
-        <RouterLink
-          to="/assets"
-          class="block rounded px-3 py-2 hover:bg-blue-700 active:bg-blue-800"
-          >Assets</RouterLink
-        >
         <RouterLink
           to="/routes"
           class="block rounded px-3 py-2 hover:bg-blue-700 active:bg-blue-800"
