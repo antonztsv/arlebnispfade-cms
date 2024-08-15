@@ -4,22 +4,26 @@ defineProps({
     type: String,
     required: true,
   },
+  to: {
+    type: String,
+    required: true,
+  },
   loading: {
     type: Boolean,
-    default: false,
+    required: true,
   },
   count: {
     type: Number,
-    default: 0,
+    required: true,
   },
 });
 </script>
 
 <template>
-  <div>
-    <h2 class="mb-4 inline-block font-headline text-3xl font-bold">
+  <RouterLink :to>
+    <h2 class="mb-4 inline-block font-headline text-3xl font-bold hover:text-gray-600">
       {{ title }}
       <span v-if="!loading" class="text-sm text-gray-500">({{ count }})</span>
     </h2>
-  </div>
+  </RouterLink>
 </template>
