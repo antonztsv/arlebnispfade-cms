@@ -156,7 +156,6 @@ function isCMSPullRequest(title: string): boolean {
 }
 
 async function simplifyPullRequest(pr: any): Promise<PullRequest> {
-  // Holen Sie die Dateien für den Pull Request
   const { data: files } = await octokit.pulls.listFiles({
     owner,
     repo,
