@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, PropType, ref } from 'vue';
+import { computed, PropType } from 'vue';
 import { POI } from '@/api/pois';
 import { useRoute } from 'vue-router';
 

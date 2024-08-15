@@ -53,6 +53,7 @@ const saveChanges = async () => {
 </script>
 
 <template>
+  <!-- Card on Home -->
   <RouterLink
     v-if="!editable"
     :to="{ name: 'pois', params: { routeId: route.id } }"
@@ -77,6 +78,7 @@ const saveChanges = async () => {
     </div>
   </RouterLink>
 
+  <!-- Card on View -->
   <div v-else class="grid grid-cols-1 md:grid-cols-2">
     <RouterLink
       :to="{ name: 'pois', params: { routeId: route.id } }"

@@ -1,5 +1,22 @@
 import { API_BASE_URL, authenticatedFetch } from './config';
 
+type ar = {
+  content: string;
+  location: string;
+  type: string;
+  nft: NFT[];
+};
+
+type NFT = {
+  id: string;
+  model: string;
+  name: string;
+  position: string;
+  rotation: string;
+  scale: string;
+  type: string;
+};
+
 export type POI = {
   id: string;
   title: string;
@@ -10,6 +27,8 @@ export type POI = {
   info: string;
   arDesc: string;
   content?: string;
+  type: string;
+  ar: ar;
 };
 
 export async function fetchPOIsForRoute(routeId: string): Promise<POI[]> {

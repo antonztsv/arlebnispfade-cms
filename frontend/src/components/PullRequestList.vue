@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { fetchPullRequests, PullRequest } from '@/api/pullRequests';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import PullRequestCard from '@/components/PullRequestCard.vue';
-import ListTitle from '@/components/ListTitle.vue';
+import LinkTitle from '@/components/LinkTitle.vue';
 
 const pullRequests = ref<PullRequest[]>([]);
 const loading = ref(true);
@@ -43,7 +43,7 @@ const handlePrUpdated = (prNumber: number) => {
 
 <template>
   <section class="mb-12">
-    <ListTitle title="Änderungen" to="/changes" :loading :count="pullRequests.length" />
+    <LinkTitle title="Änderungen" to="/changes" :loading :count="pullRequests.length" />
     <LoadingSpinner v-if="loading" />
     <div v-else class="space-y-4">
       <PullRequestCard
