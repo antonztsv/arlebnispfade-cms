@@ -9,6 +9,15 @@ export type PullRequest = {
   created_at: string;
   updated_at: string;
   html_url: string;
+  files: [
+    {
+      filename: string;
+      status: string;
+      additions: number;
+      deletions: number;
+      changes: number;
+    },
+  ];
 };
 
 export async function fetchPullRequests(): Promise<PullRequest[]> {

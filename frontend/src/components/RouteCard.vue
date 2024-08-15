@@ -24,8 +24,6 @@ const imageUrl = computed(
     `https://raw.githubusercontent.com/${import.meta.env.VITE_GH_OWNER}/${import.meta.env.VITE_GH_REPO}/main/src/${props.route.id}/images/small/${props.route.image}`,
 );
 
-console.log(imageUrl.value);
-
 const toggleEdit = () => {
   if (isEditing.value) {
     editedRoute.value = { ...props.route };

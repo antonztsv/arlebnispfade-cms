@@ -10,7 +10,10 @@ const loading = ref(true);
 const props = defineProps({
   filter: {
     type: Number,
-    default: 6,
+    default: null,
+  },
+  detailed: {
+    type: Boolean,
   },
 });
 
@@ -27,14 +30,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section>
+  <section class="mb-12">
     <ListTitle title="Änderungen" to="/changes" :loading :count="pullRequests.length" />
     <LoadingSpinner v-if="loading" />
     <div v-else class="space-y-4">
       <PullRequestCard
-        v-for="pr in pullRequests.slice(0, props.filter)"
+        v-for="pr in filter ? pullRequests.slice(0, props.filter) : pullRequests"
         :key="pr.id"
         :pull-request="pr"
+        :detailed
       />
     </div>
   </section>

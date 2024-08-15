@@ -10,7 +10,7 @@ const loading = ref(true);
 const props = defineProps({
   filter: {
     type: Number,
-    default: 3,
+    default: null,
   },
   gridCols: {
     type: Number,
@@ -40,7 +40,7 @@ onMounted(async () => {
     <LoadingSpinner v-if="loading" />
     <div v-else :class="`grid grid-cols-1 gap-4 md:grid-cols-${props.gridCols}`">
       <RouteCard
-        v-for="route in routes.slice(0, props.filter)"
+        v-for="route in filter ? routes.slice(0, props.filter) : routes"
         :key="route.id"
         :route="route"
         :editable="editable"
