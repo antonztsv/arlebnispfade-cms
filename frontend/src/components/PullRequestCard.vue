@@ -25,7 +25,34 @@ const formatDate = (dateString: string) => {
 </script>
 
 <template>
+  <!-- normal view -->
+  <RouterLink
+    v-if="!detailed"
+    :to="`/changes/${pullRequest.number}`"
+    class="changes-card flex justify-between rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4 py-6 transition-colors hover:bg-gray-200"
+  >
+    <!-- <div class="flex justify-between"> -->
+    <div>
+      <h3 class="font-semibold">
+        <span class="text-gray-500">#{{ pullRequest.number }}</span>
+        {{ pullRequest.title }}
+      </h3>
+
+      <p class="text-sm text-gray-500">
+        {{ formatDate(pullRequest.created_at) }}
+      </p>
+    </div>
+    <div
+      class="self-center rounded-md transition-transform duration-300 ease-in-out hover:bg-gray-100"
+    >
+      <span class="pi pi-arrow-right-arrow-left text-lg"></span>
+    </div>
+    <!-- </div> -->
+  </RouterLink>
+
+  <!-- detailed view -->
   <div
+    v-else
     class="changes-card rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4 py-6 transition-colors"
   >
     <div class="flex justify-between">
@@ -47,6 +74,7 @@ const formatDate = (dateString: string) => {
     </div>
     <div v-if="detailed">
       <hr class="my-4 h-px border-0 bg-gray-300" />
+      <!-- https://flowbite.com/docs/typography/hr/ -->
       <div>
         <p>{{ pullRequest.files[0].filename }}</p>
       </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { fetchRoutes, Route } from '@/api/routes';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import RouteCard from '@/components/RouteCard.vue';
@@ -32,13 +32,20 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+const gridClass = computed(() => ({
+  grid: true,
+  'grid-cols-1': true,
+  'gap-4': true,
+  [`md:grid-cols-${props.gridCols}`]: true,
+}));
 </script>
 
 <template>
   <section class="mb-12">
     <ListTitle title="Routen" to="/routes" :loading :count="routes.length" />
     <LoadingSpinner v-if="loading" />
-    <div v-else :class="`grid grid-cols-1 gap-4 md:grid-cols-${props.gridCols}`">
+    <div v-else :class="gridClass">
       <RouteCard
         v-for="route in filter ? routes.slice(0, props.filter) : routes"
         :key="route.id"
