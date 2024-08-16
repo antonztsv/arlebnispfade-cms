@@ -80,7 +80,7 @@ const saveChanges = async () => {
   </RouterLink>
 
   <!-- Card on View -->
-  <div v-else class="grid grid-cols-1 md:grid-cols-2">
+  <div v-else class="grid grid-cols-1 rounded-lg border bg-gray-100 lg:grid-cols-2">
     <RouterLink
       :to="cardLink"
       class="route-card overflow-hidden rounded-lg rounded-b-none md:rounded-b-lg lg:rounded-b-lg"
@@ -103,7 +103,7 @@ const saveChanges = async () => {
         </h3>
       </div>
     </RouterLink>
-    <div class="bg-gray-100 p-4">
+    <div class="p-4">
       <LoadingSpinner v-if="isSaving" />
       <div v-else>
         <div class="mb-4">

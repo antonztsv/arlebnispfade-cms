@@ -50,9 +50,7 @@ async function loadImages() {
     <div>
       <ListTitle title="AR-Medien" :loading="loadingARMedia" :count="arMedia.length" />
       <LoadingSpinner v-if="loadingARMedia" />
-      <div v-else>
-        <ARMediaList :ar-media="arMedia" />
-      </div>
+      <ARMediaList v-else :ar-media="arMedia" />
     </div>
     <div>
       <ListTitle title="Bilder" :loading="loadingImages" :count="images.length" />

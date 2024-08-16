@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { fetchPOIById, POI } from '@/api/pois';
@@ -164,4 +164,12 @@ const savePOI = async () => {
       </div>
     </div>
   </div>
+</template> -->
+
+<script setup lang="ts"></script>
+
+<template>
+  <div></div>
 </template>
+
+<style scoped></style>

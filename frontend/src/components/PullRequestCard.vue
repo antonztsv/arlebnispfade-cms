@@ -66,7 +66,7 @@ const closePR = async (pullRequestNumber: number) => {
   <RouterLink
     v-if="!detailed"
     to="/changes"
-    class="changes-card flex justify-between rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4 py-6 transition-colors hover:bg-gray-200"
+    class="changes-card flex justify-between rounded-lg border border-l-8 border-l-blue-500 bg-gray-100 p-4 py-6 transition-colors hover:bg-gray-200"
   >
     <div>
       <h3 class="font-semibold">
@@ -88,7 +88,7 @@ const closePR = async (pullRequestNumber: number) => {
   <!-- detailed view -->
   <div
     v-else
-    class="changes-card rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4 py-6 transition-colors"
+    class="changes-card rounded-lg border border-l-8 border-l-blue-500 bg-gray-100 p-4 py-6 transition-colors"
   >
     <LoadingSpinner v-if="loading" />
     <div v-else>
