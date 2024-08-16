@@ -126,7 +126,7 @@ export async function deleteARMedia(routeId: string, mediaId: string): Promise<v
     throw new NotFoundError(`AR Media not found: ${mediaId}`);
   }
 
-  const path = `src/${routeId}/ar-media/${mediaToDelete.filename}`;
+  const path = `src/${routeId}/ar-media/${mediaToDelete.type}s/${mediaToDelete.filename}`;
   const { data: file } = await octokit.repos.getContent({
     owner,
     repo,
