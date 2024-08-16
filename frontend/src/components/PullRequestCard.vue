@@ -2,12 +2,12 @@
 import { PropType, ref } from 'vue';
 import { PullRequest } from '@/api/pullRequests';
 import { mergePullRequest, closePullRequest } from '@/api/pullRequests';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
 
-const loading = ref(false);
+const mergingPR = ref(false);
+const closingPR = ref(false);
 
 defineProps({
   pullRequest: {
@@ -33,7 +33,7 @@ const formatDate = (dateString: string) => {
 };
 
 const mergePR = async (pullRequestNumber: number) => {
-  loading.value = true;
+  mergingPR.value = true;
   try {
     await mergePullRequest(pullRequestNumber);
     toast.success('Änderung erfolgreich angenommen');
@@ -42,12 +42,12 @@ const mergePR = async (pullRequestNumber: number) => {
     console.error('Error merging pull request:', error);
     toast.error('Fehler beim Annehmen der Änderung');
   } finally {
-    loading.value = false;
+    mergingPR.value = false;
   }
 };
 
 const closePR = async (pullRequestNumber: number) => {
-  loading.value = true;
+  closingPR.value = true;
   try {
     await closePullRequest(pullRequestNumber);
     toast.success('Änderung erfolgreich gelöscht');
@@ -56,7 +56,7 @@ const closePR = async (pullRequestNumber: number) => {
     console.error('Error closing pull request:', error);
     toast.error('Fehler beim Löschen der Änderung');
   } finally {
-    loading.value = false;
+    closingPR.value = false;
   }
 };
 </script>
@@ -90,63 +90,62 @@ const closePR = async (pullRequestNumber: number) => {
     v-else
     class="changes-card rounded-lg border border-l-8 border-l-blue-500 bg-gray-100 p-4 py-6 transition-colors"
   >
-    <LoadingSpinner v-if="loading" />
-    <div v-else>
-      <div class="flex justify-between">
-        <div>
-          <h3 class="font-semibold">
-            <span class="text-gray-500">#{{ pullRequest.number }}</span>
-            {{ pullRequest.title }}
-          </h3>
-
-          <p class="text-sm text-gray-500">
-            {{ formatDate(pullRequest.created_at) }}
-          </p>
-        </div>
-        <div
-          class="self-center rounded-md transition-transform duration-300 ease-in-out hover:bg-gray-100"
-        >
-          <span class="pi pi-arrow-right-arrow-left text-lg"></span>
-        </div>
-      </div>
+    <div class="flex justify-between">
       <div>
-        <hr class="my-4 h-px border-0 bg-gray-300" />
-        <!-- https://flowbite.com/docs/typography/hr/ -->
-        <div>
-          <p>{{ pullRequest.files[0].filename }}</p>
-        </div>
-        <div class="mt-4 flex">
-          <a
-            :href="`${pullRequest.html_url}/files`"
-            target="_blank"
-            title="Auf Github anzeigen"
-            class="mr-2 rounded bg-gray-900 px-4 py-[10px] text-white hover:bg-gray-700 active:bg-gray-800"
-          >
-            <span class="pi pi-github"></span>
-          </a>
-          <button
-            :class="[
-              'mr-2 rounded bg-blue-500 p-2 px-4 text-white disabled:text-gray-200',
-              { 'cursor-not-allowed': loading },
-              { 'hover:bg-blue-600 active:bg-blue-700': !loading },
-            ]"
-            @click="mergePR(pullRequest.number)"
-            :disabled="loading"
-          >
-            Annehmen
-          </button>
-          <button
-            :class="[
-              'mr-2 rounded bg-gray-200 p-2 px-4 disabled:text-gray-400',
-              { 'cursor-not-allowed': loading },
-              { 'hover:bg-gray-300 active:bg-gray-400': !loading },
-            ]"
-            @click="closePR(pullRequest.number)"
-            :disabled="loading"
-          >
-            Löschen
-          </button>
-        </div>
+        <h3 class="font-semibold">
+          <span class="text-gray-500">#{{ pullRequest.number }}</span>
+          {{ pullRequest.title }}
+        </h3>
+
+        <p class="text-sm text-gray-500">
+          {{ formatDate(pullRequest.created_at) }}
+        </p>
+      </div>
+      <div
+        class="self-center rounded-md transition-transform duration-300 ease-in-out hover:bg-gray-100"
+      >
+        <span class="pi pi-arrow-right-arrow-left text-lg"></span>
+      </div>
+    </div>
+    <div>
+      <hr class="my-4 h-px border-0 bg-gray-300" />
+      <!-- https://flowbite.com/docs/typography/hr/ -->
+      <div>
+        <p>{{ pullRequest.files[0].filename }}</p>
+      </div>
+      <div class="mt-4 flex">
+        <a
+          :href="`${pullRequest.html_url}/files`"
+          target="_blank"
+          title="Auf Github anzeigen"
+          class="mr-2 rounded bg-gray-900 px-4 py-[10px] text-white hover:bg-gray-700 active:bg-gray-800"
+        >
+          <span class="pi pi-github"></span>
+        </a>
+        <button
+          :class="[
+            'mr-2 rounded bg-blue-500 p-2 px-4 text-white disabled:text-gray-200',
+            { 'cursor-not-allowed': mergingPR },
+            { 'hover:bg-blue-600 active:bg-blue-700': !mergingPR },
+          ]"
+          @click="mergePR(pullRequest.number)"
+          :disabled="mergingPR || closingPR"
+        >
+          <span v-if="mergingPR" class="pi pi-spin pi-spinner mr-2"></span>
+          {{ mergingPR ? 'Wird angenommen...' : 'Annehmen' }}
+        </button>
+        <button
+          :class="[
+            'mr-2 rounded bg-gray-200 p-2 px-4 disabled:text-gray-400',
+            { 'cursor-not-allowed': closingPR },
+            { 'hover:bg-gray-300 active:bg-gray-400': !closingPR },
+          ]"
+          @click="closePR(pullRequest.number)"
+          :disabled="mergingPR || closingPR"
+        >
+          <span v-if="closingPR" class="pi pi-spin pi-spinner mr-2"></span>
+          {{ closingPR ? 'Wird gelöscht...' : 'Löschen' }}
+        </button>
       </div>
     </div>
   </div>
