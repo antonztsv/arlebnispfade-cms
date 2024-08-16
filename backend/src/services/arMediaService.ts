@@ -63,10 +63,6 @@ export async function createARMedia(
 
   const branchName = await createBranch(`create-ar-media-${filename}-${Date.now()}`);
 
-  console.log(`Attempting to create/update file: ${path}`);
-  console.log(`Branch name: ${branchName}`);
-  console.log(`Media type: ${mediaType}`);
-
   await createOrUpdateFile(
     path,
     content,
