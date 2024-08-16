@@ -37,7 +37,7 @@ const title = computed(() => {
   <div>
     <ListTitle :title="title" :to="route.fullPath" :loading :count="pois.length" />
     <LoadingSpinner v-if="loading" />
-    <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <POICard v-for="poi in pois" :key="poi.id" :poi="poi" />
     </div>
   </div>

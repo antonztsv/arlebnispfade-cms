@@ -28,6 +28,16 @@ const isUploadDisabled = computed(() => {
   return uploadingMedia.value !== null || !selectedMediaType.value;
 });
 
+const resetUploadState = () => {
+  uploadingMedia.value = null;
+  selectedMediaType.value = '';
+  // Reset the file input
+  const fileInput = document.getElementById('ar-media-upload') as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = '';
+  }
+};
+
 const handleARMediaUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0] && selectedMediaType.value) {
@@ -39,8 +49,7 @@ const handleARMediaUpload = async (event: Event) => {
       console.error('Error uploading AR media:', error);
       toast.error('Änderung konnte nicht gespeichert werden');
     } finally {
-      uploadingMedia.value = null;
-      selectedMediaType.value = '';
+      resetUploadState();
     }
   } else {
     toast.error('Bitte wählen Sie einen Medientyp aus');
@@ -63,38 +72,42 @@ const handleARMediaDelete = async (media: ARMedia) => {
 
 <template>
   <div>
-    <input
-      type="file"
-      @change="handleARMediaUpload"
-      class="hidden"
-      id="ar-media-upload"
-      :disabled="isUploadDisabled"
-    />
-    <label
-      for="ar-media-upload"
-      class="mb-4 block cursor-pointer rounded bg-blue-500 p-2 px-4 text-center text-white transition-colors duration-200"
-      :class="{
-        'hover:bg-blue-600 active:bg-blue-700': !isUploadDisabled,
-        'cursor-not-allowed bg-gray-400': isUploadDisabled,
-      }"
-    >
-      <span v-if="uploadingMedia" class="pi pi-spin pi-spinner mr-2"></span>
-      <span v-else class="pi pi-upload mr-2 text-sm"></span>
-      {{ uploadingMedia ? 'Uploading...' : 'Hinzufügen' }}
-    </label>
-
-    <div class="mb-4">
-      <select
-        v-model="selectedMediaType"
-        class="block w-full rounded border border-gray-300 p-2"
-        :disabled="uploadingMedia !== null"
+    <div class="rounded-lg border bg-gray-100 p-4">
+      <input
+        type="file"
+        @change="handleARMediaUpload"
+        class="hidden"
+        id="ar-media-upload"
+        :disabled="isUploadDisabled"
+      />
+      <label
+        for="ar-media-upload"
+        class="mb-4 block cursor-pointer rounded bg-blue-500 p-2 px-4 text-center text-white transition-colors duration-200"
+        :class="{
+          'hover:bg-blue-600 active:bg-blue-700': !isUploadDisabled,
+          'cursor-not-allowed bg-gray-400': isUploadDisabled,
+        }"
       >
-        <option value="" disabled>Medientyp auswählen</option>
-        <option v-for="type in mediaTypes" :key="type" :value="type">
-          {{ type.charAt(0).toUpperCase() + type.slice(1) }}
-        </option>
-      </select>
+        <span v-if="uploadingMedia" class="pi pi-spin pi-spinner mr-2"></span>
+        <span v-else class="pi pi-upload mr-2 text-sm"></span>
+        {{ uploadingMedia ? 'Lädt...' : 'Hinzufügen' }}
+      </label>
+
+      <div class="mb-4">
+        <select
+          v-model="selectedMediaType"
+          class="block w-full rounded border border-gray-300 p-2"
+          :disabled="uploadingMedia !== null"
+        >
+          <option value="" disabled>Medientyp auswählen</option>
+          <option v-for="type in mediaTypes" :key="type" :value="type">
+            {{ type.charAt(0).toUpperCase() + type.slice(1) }}
+          </option>
+        </select>
+      </div>
     </div>
+
+    <hr class="my-4 border-gray-300" />
 
     <div class="mt-4 space-y-4">
       <div

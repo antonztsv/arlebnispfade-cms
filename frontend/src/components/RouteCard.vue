@@ -79,7 +79,7 @@ const saveChanges = async () => {
     </div>
   </RouterLink>
 
-  <!-- Card on View -->
+  <!-- Card on Route View -->
   <div v-else class="grid grid-cols-1 rounded-lg border bg-gray-100 lg:grid-cols-2">
     <RouterLink
       :to="cardLink"
@@ -153,7 +153,7 @@ const saveChanges = async () => {
         <button
           @click="toggleEdit"
           :class="[
-            'mr-2 rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400',
+            'mr-2 rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700',
             { hidden: isEditing },
           ]"
         >
@@ -170,7 +170,10 @@ const saveChanges = async () => {
         </button>
         <button
           @click="toggleEdit"
-          :class="['rounded p-2 px-4 hover:bg-gray-300 active:bg-gray-400', { hidden: !isEditing }]"
+          :class="[
+            'rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400',
+            { hidden: !isEditing },
+          ]"
         >
           Abbrechen
         </button>
