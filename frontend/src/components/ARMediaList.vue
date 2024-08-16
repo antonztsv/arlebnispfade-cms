@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { PropType, ref } from 'vue';
+import { computed, PropType, ref } from 'vue';
 import { addARMedia, deleteARMedia, ARMedia } from '@/api/arMedia';
 import { useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
+const githubOwner = import.meta.env.VITE_GH_OWNER as string;
+const githubRepo = import.meta.env.VITE_GH_REPO as string;
 
 const toast = useToast();
 
 const route = useRoute();
 const routeId = route.params.routeId as string;
-const loading = ref(false);
 const deletingMedia = ref<string | null>(null);
+const uploadingMedia = ref<File | null>(null);
+const selectedMediaType = ref<string>('');
 
-const githubOwner = import.meta.env.VITE_GH_OWNER as string;
-const githubRepo = import.meta.env.VITE_GH_REPO as string;
+const mediaTypes = ['audios', 'images', 'videos', 'models'];
 
 defineProps({
   arMedia: {
@@ -22,51 +24,83 @@ defineProps({
   },
 });
 
+const isUploadDisabled = computed(() => {
+  return uploadingMedia.value !== null || !selectedMediaType.value;
+});
+
 const handleARMediaUpload = async (event: Event) => {
-  loading.value = true;
   const input = event.target as HTMLInputElement;
-  if (input.files && input.files[0]) {
+  if (input.files && input.files[0] && selectedMediaType.value) {
     try {
-      await addARMedia(routeId, input.files[0]);
+      uploadingMedia.value = input.files[0];
+      await addARMedia(routeId, input.files[0], selectedMediaType.value);
       toast.success('Änderung erfolgreich gespeichert');
     } catch (error) {
       console.error('Error uploading AR media:', error);
       toast.error('Änderung konnte nicht gespeichert werden');
     } finally {
-      loading.value = false;
+      uploadingMedia.value = null;
+      selectedMediaType.value = '';
     }
+  } else {
+    toast.error('Bitte wählen Sie einen Medientyp aus');
   }
 };
 
 const handleARMediaDelete = async (media: ARMedia) => {
-  loading.value = true;
   try {
+    deletingMedia.value = media.id;
     await deleteARMedia(routeId, media.id);
     toast.success('Änderung erfolgreich gespeichert');
   } catch (error) {
     console.error('Error deleting AR media:', error);
     toast.error('Änderung konnte nicht gespeichert werden');
   } finally {
-    loading.value = false;
+    deletingMedia.value = null;
   }
 };
 </script>
 
 <template>
-  <LoadingSpinner v-if="loading" />
-  <div v-else>
-    <input type="file" @change="handleARMediaUpload" class="hidden" id="ar-media-upload" />
+  <div>
+    <input
+      type="file"
+      @change="handleARMediaUpload"
+      class="hidden"
+      id="ar-media-upload"
+      :disabled="isUploadDisabled"
+    />
     <label
       for="ar-media-upload"
-      class="block cursor-pointer rounded bg-blue-500 p-2 px-4 text-center text-white hover:bg-blue-600 active:bg-blue-700"
-      ><span class="pi pi-upload mr-2 text-sm"></span> Hinzufügen</label
+      class="mb-4 block cursor-pointer rounded bg-blue-500 p-2 px-4 text-center text-white transition-colors duration-200"
+      :class="{
+        'hover:bg-blue-600 active:bg-blue-700': !isUploadDisabled,
+        'cursor-not-allowed bg-gray-400': isUploadDisabled,
+      }"
     >
+      <span v-if="uploadingMedia" class="pi pi-spin pi-spinner mr-2"></span>
+      <span v-else class="pi pi-upload mr-2 text-sm"></span>
+      {{ uploadingMedia ? 'Uploading...' : 'Hinzufügen' }}
+    </label>
+
+    <div class="mb-4">
+      <select
+        v-model="selectedMediaType"
+        class="block w-full rounded border border-gray-300 p-2"
+        :disabled="uploadingMedia !== null"
+      >
+        <option value="" disabled>Medientyp auswählen</option>
+        <option v-for="type in mediaTypes" :key="type" :value="type">
+          {{ type.charAt(0).toUpperCase() + type.slice(1) }}
+        </option>
+      </select>
+    </div>
 
     <div class="mt-4 space-y-4">
       <div
         v-for="media in arMedia"
         :key="media.id"
-        class="rounded-lg border-l-8 border-blue-500 bg-gray-100 p-4"
+        class="rounded-lg border border-l-8 border-l-blue-500 bg-gray-100 p-4"
       >
         <div class="flex justify-between">
           <h3 class="font-semibold">{{ media.filename }}</h3>

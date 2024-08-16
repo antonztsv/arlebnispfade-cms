@@ -15,9 +15,10 @@ export async function fetchARMedia(routeId: string): Promise<ARMedia[]> {
   return response.json();
 }
 
-export async function addARMedia(routeId: string, file: File): Promise<ARMedia> {
+export async function addARMedia(routeId: string, file: File, mediaType: string): Promise<ARMedia> {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('mediaType', mediaType);
 
   const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}/ar-media`, {
     method: 'POST',
