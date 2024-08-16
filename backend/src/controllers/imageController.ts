@@ -34,10 +34,12 @@ export async function createImage(req: Request, res: Response, next: NextFunctio
   try {
     const { routeId } = req.params;
     const file = req.file as Express.Multer.File;
+    const isSmallImage = req.body.isSmallImage === 'true';
+
     if (!file) {
       throw new ValidationError('No file uploaded');
     }
-    const newImage = await imageService.createImage(routeId, file);
+    const newImage = await imageService.createImage(routeId, file, isSmallImage);
     res.status(201).json(newImage);
   } catch (error) {
     next(error);

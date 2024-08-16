@@ -1,5 +1,6 @@
 import config from '@/config';
 import crypto from 'crypto';
+import path from 'path';
 import { Image, imageSchema } from '@/schemas/imageSchema';
 import * as pullRequestService from '@/services/pullRequestService';
 import {
@@ -44,13 +45,19 @@ export async function getImageById(routeId: string, imageId: string): Promise<Im
   return image;
 }
 
-export async function createImage(routeId: string, file: Express.Multer.File): Promise<Image> {
+export async function createImage(
+  routeId: string,
+  file: Express.Multer.File,
+  isSmallImage: boolean,
+): Promise<Image> {
   if (!file) {
     throw new ValidationError('No file uploaded');
   }
 
   const filename = file.originalname;
-  const filePath = `src/${routeId}/images/${filename}`;
+  const filePath = isSmallImage
+    ? `src/${routeId}/images/small/${filename}`
+    : `src/${routeId}/images/${filename}`;
 
   const branchName = await createBranch(`create-image-${filename}-${Date.now()}`);
 
@@ -59,7 +66,7 @@ export async function createImage(routeId: string, file: Express.Multer.File): P
       owner,
       repo,
       path: filePath,
-      message: `${config.commitPrefix} Add new image ${filename}`,
+      message: `${config.commitPrefix} Add new image ${filename}${isSmallImage ? ' (small)' : ''}`,
       content: file.buffer.toString('base64'),
       branch: branchName,
     });
@@ -124,39 +131,65 @@ export async function updateImage(
   };
 }
 
+// src/services/imageService.ts
+
 export async function deleteImage(routeId: string, imageId: string): Promise<void> {
   const basePath = `src/${routeId}/images`;
-  const allImages = await getImagesRecursive(basePath, basePath);
-  const imageToDelete = allImages.find((item) => item.id === imageId);
+  const smallPath = `${basePath}/small`;
 
-  if (!imageToDelete) {
-    throw new NotFoundError(`Image not found: ${imageId}`);
-  }
+  try {
+    // look for the image in the main directory
+    const { data: file } = await octokit.repos.getContent({
+      owner,
+      repo,
+      path: basePath,
+    });
 
-  const path = `src/${routeId}/images/${imageToDelete.filename}`;
-  const { data: file } = await octokit.repos.getContent({
-    owner,
-    repo,
-    path,
-  });
+    let imageToDelete = Array.isArray(file)
+      ? file.find((item) => item.name === imageId || generateConsistentId(item.path) === imageId)
+      : null;
 
-  if ('sha' in file) {
-    const branchName = await createBranch(`delete-image-${imageToDelete.filename}-${Date.now()}`);
+    // if not found, look for the image in the small directory
+    if (!imageToDelete) {
+      const { data: smallFile } = await octokit.repos.getContent({
+        owner,
+        repo,
+        path: smallPath,
+      });
+
+      imageToDelete = Array.isArray(smallFile)
+        ? smallFile.find(
+            (item) => item.name === imageId || generateConsistentId(item.path) === imageId,
+          )
+        : null;
+    }
+
+    if (!imageToDelete || !('sha' in imageToDelete)) {
+      throw new NotFoundError(`Image not found: ${imageId}`);
+    }
+
+    const branchName = await createBranch(`delete-image-${imageToDelete.name}-${Date.now()}`);
 
     await octokit.repos.deleteFile({
       owner,
       repo,
-      path,
-      message: `${config.commitPrefix} Delete image ${imageToDelete.filename}`,
-      sha: file.sha,
+      path: imageToDelete.path,
+      message: `${config.commitPrefix} Delete image ${imageToDelete.name}`,
+      sha: imageToDelete.sha,
       branch: branchName,
     });
 
-    const prTitle = generatePRTitle('Delete', 'Image', imageToDelete.filename);
-    const prDescription = generatePRDescription('Delete', 'Image', imageToDelete.filename);
+    const prTitle = generatePRTitle('Delete', 'Image', imageToDelete.name);
+    const prDescription = generatePRDescription('Delete', 'Image', imageToDelete.name);
     await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
-  } else {
-    throw new NotFoundError(`Image file not found: ${imageToDelete.filename}`);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`Image not found: ${imageId}`);
+    }
+    throw error;
   }
 }
 
