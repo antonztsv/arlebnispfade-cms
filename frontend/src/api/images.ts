@@ -14,9 +14,10 @@ export async function fetchImages(routeId: string): Promise<Image[]> {
   return response.json();
 }
 
-export async function addImage(routeId: string, file: File): Promise<Image> {
+export async function addImage(routeId: string, file: File, isSmallImage: boolean): Promise<Image> {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('isSmallImage', isSmallImage.toString());
 
   const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}/images`, {
     method: 'POST',

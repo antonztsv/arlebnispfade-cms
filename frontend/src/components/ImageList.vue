@@ -2,14 +2,15 @@
 import { PropType, ref } from 'vue';
 import { deleteImage, addImage, Image } from '@/api/images';
 import { useToast } from 'vue-toastification';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useRoute } from 'vue-router';
 
 const toast = useToast();
 
 const route = useRoute();
 const routeId = route.params.routeId as string;
-const loading = ref(false);
+const deletingImage = ref<string | null>(null);
+const uploadingImage = ref<File | null>(null);
+const isSmallImage = ref(false);
 
 const githubOwner = import.meta.env.VITE_GH_OWNER as string;
 const githubRepo = import.meta.env.VITE_GH_REPO as string;
@@ -21,24 +22,33 @@ defineProps({
   },
 });
 
+const resetUploadState = () => {
+  uploadingImage.value = null;
+  isSmallImage.value = false;
+  const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = '';
+  }
+};
+
 const handleImageUpload = async (event: Event) => {
-  loading.value = true;
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
     try {
-      const newImage = await addImage(routeId, input.files[0]);
+      uploadingImage.value = input.files[0];
+      await addImage(routeId, input.files[0], isSmallImage.value);
       toast.success('Änderung erfolgreich gespeichert');
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error('Änderung konnte nicht gespeichert werden');
     } finally {
-      loading.value = false;
+      resetUploadState();
     }
   }
 };
 
 const handleImageDelete = async (image: Image) => {
-  loading.value = true;
+  deletingImage.value = image.id;
   try {
     await deleteImage(routeId, image.id);
     toast.success('Änderung erfolgreich gespeichert');
@@ -46,55 +56,78 @@ const handleImageDelete = async (image: Image) => {
     console.error('Error deleting image:', error);
     toast.error('Änderung konnte nicht gespeichert werden');
   } finally {
-    loading.value = false;
+    deletingImage.value = null;
   }
 };
 </script>
 
 <template>
-  <LoadingSpinner v-if="loading" />
-  <div v-else>
-    <input type="file" @click="handleImageUpload" class="hidden" id="ar-media-upload" />
-    <label
-      for="ar-media-upload"
-      class="block cursor-pointer rounded bg-blue-500 p-2 px-4 text-center text-white hover:bg-blue-600 active:bg-blue-700"
-      ><span class="pi pi-upload mr-2 text-sm"></span> Hinzufügen</label
-    >
-    <div class="mt-4 space-y-4">
-      <div v-for="image in images" :key="image.id" class="route-card overflow-hidden rounded-lg">
-        <div class="relative h-64 overflow-hidden">
-          <div
-            class="absolute inset-0 bg-cover bg-center transition-transform duration-300 ease-in-out"
-            :style="{
-              backgroundImage: `url('https://raw.githubusercontent.com/${githubOwner}/${githubRepo}/main/${image.url}')`,
-            }"
-          ></div>
-          <div
-            class="absolute inset-0 bg-black opacity-30 transition-opacity duration-300 ease-in-out"
-          ></div>
+  <div>
+    <div class="rounded-lg border bg-gray-100 p-4">
+      <input
+        type="file"
+        @change="handleImageUpload"
+        class="hidden"
+        id="image-upload"
+        :disabled="uploadingImage !== null"
+      />
 
-          <h3
-            class="absolute bottom-4 left-4 text-lg font-semibold text-white transition-transform duration-300 ease-in-out"
-          >
-            {{ image.filename }}
-          </h3>
-          <button class="absolute bottom-4 right-4"><span></span></button>
+      <label
+        for="image-upload"
+        class="mb-4 block cursor-pointer rounded bg-blue-500 p-2 px-4 text-center text-white transition-colors duration-200"
+        :class="{
+          'hover:bg-blue-600 active:bg-blue-700': !uploadingImage,
+          'cursor-not-allowed bg-gray-400': uploadingImage,
+        }"
+      >
+        <span v-if="uploadingImage" class="pi pi-spin pi-spinner mr-2"></span>
+        <span v-else class="pi pi-upload mr-2 text-sm"></span>
+        {{ uploadingImage ? 'Lädt...' : 'Hinzufügen' }}
+      </label>
+      <div class="mb-0 flex items-center md:mb-5">
+        <input
+          type="checkbox"
+          id="small-image"
+          v-model="isSmallImage"
+          class="mr-2"
+          :disabled="uploadingImage !== null"
+        />
+        <label for="small-image" class="text-sm text-gray-700"
+          >Als kleines (small) Bild speichern</label
+        >
+      </div>
+    </div>
+
+    <hr class="my-4 border-gray-300" />
+
+    <div class="mt-4 space-y-4">
+      <div
+        v-for="image in images"
+        :key="image.id"
+        class="rounded-lg border border-l-8 border-l-blue-500 bg-gray-100 p-4"
+      >
+        <div class="flex justify-between">
+          <h3 class="font-semibold">{{ image.filename }}</h3>
+          <div class="flex items-center space-x-2">
+            <button
+              @click="handleImageDelete(image)"
+              class="rounded bg-gray-200 p-1 px-2 hover:bg-red-500 hover:text-white active:bg-red-700"
+              :disabled="deletingImage === image.id"
+            >
+              <span v-if="deletingImage === image.id" class="pi pi-spin pi-spinner"></span>
+              <span v-else class="pi pi-trash"></span>
+            </button>
+          </div>
+        </div>
+        <p class="mt-2 text-sm text-gray-600">{{ image.url }}</p>
+        <div class="mt-4 w-full overflow-hidden rounded">
+          <img
+            :src="`https://raw.githubusercontent.com/${githubOwner}/${githubRepo}/main/${image.url}`"
+            :alt="image.filename"
+            class="h-full w-full object-cover"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.route-card:hover .bg-cover {
-  transform: scale(1.1);
-}
-
-.route-card:hover .bg-black {
-  opacity: 0.5;
-}
-
-.route-card:hover h3 {
-  transform: translateY(-10px);
-}
-</style>

@@ -93,18 +93,16 @@ const handleARMediaDelete = async (media: ARMedia) => {
         {{ uploadingMedia ? 'Lädt...' : 'Hinzufügen' }}
       </label>
 
-      <div class="mb-4">
-        <select
-          v-model="selectedMediaType"
-          class="block w-full rounded border border-gray-300 p-2"
-          :disabled="uploadingMedia !== null"
-        >
-          <option value="" disabled>Medientyp auswählen</option>
-          <option v-for="type in mediaTypes" :key="type" :value="type">
-            {{ type.charAt(0).toUpperCase() + type.slice(1) }}
-          </option>
-        </select>
-      </div>
+      <select
+        v-model="selectedMediaType"
+        class="block w-full rounded border border-gray-300 p-2"
+        :disabled="uploadingMedia !== null"
+      >
+        <option value="" disabled>Medientyp auswählen</option>
+        <option v-for="type in mediaTypes" :key="type" :value="type">
+          {{ type.charAt(0).toUpperCase() + type.slice(1) }}
+        </option>
+      </select>
     </div>
 
     <hr class="my-4 border-gray-300" />
@@ -117,6 +115,7 @@ const handleARMediaDelete = async (media: ARMedia) => {
       >
         <div class="flex justify-between">
           <h3 class="font-semibold">{{ media.filename }}</h3>
+
           <div class="flex items-center space-x-2">
             <p class="flex text-sm text-gray-500">
               <span
@@ -147,6 +146,7 @@ const handleARMediaDelete = async (media: ARMedia) => {
             </button>
           </div>
         </div>
+        <p class="mt-2 text-sm text-gray-600">{{ media.url }}</p>
         <audio
           v-if="media.type === 'audio'"
           controls
@@ -167,6 +167,7 @@ const handleARMediaDelete = async (media: ARMedia) => {
             !media.url.endsWith('.fset3')
           "
           class="mt-4 w-full rounded"
+          :alt="media.filename"
           :src="`https://raw.githubusercontent.com/${githubOwner}/${githubRepo}/main/${media.url}`"
         />
       </div>
