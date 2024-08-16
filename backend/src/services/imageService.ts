@@ -1,6 +1,6 @@
 import config from '@/config';
 import crypto from 'crypto';
-import { Image } from '@/schemas/imageSchema';
+import { Image, imageSchema } from '@/schemas/imageSchema';
 import * as pullRequestService from '@/services/pullRequestService';
 import {
   createBranch,
@@ -50,27 +50,38 @@ export async function createImage(routeId: string, file: Express.Multer.File): P
   }
 
   const filename = file.originalname;
-  const path = `src/${routeId}/images/${filename}`;
-  const content = file.buffer.toString('base64');
+  const filePath = `src/${routeId}/images/${filename}`;
 
   const branchName = await createBranch(`create-image-${filename}-${Date.now()}`);
 
-  await createOrUpdateFile(
-    path,
-    content,
-    `${config.commitPrefix} Add new image ${filename}`,
-    branchName,
-  );
+  try {
+    await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: filePath,
+      message: `${config.commitPrefix} Add new image ${filename}`,
+      content: file.buffer.toString('base64'),
+      branch: branchName,
+    });
 
-  const prTitle = generatePRTitle('Create', 'Image', filename);
-  const prDescription = generatePRDescription('Create', 'Image', filename);
-  await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
+    const prTitle = generatePRTitle('Create', 'Image', filename);
+    const prDescription = generatePRDescription('Create', 'Image', filename);
+    await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
-  return {
-    id: generateConsistentId(path),
-    filename,
-    url: path,
-  };
+    const newImage: Image = {
+      id: generateConsistentId(filePath),
+      filename,
+      url: filePath,
+    };
+
+    return imageSchema.parse(newImage);
+  } catch (error) {
+    console.error('Error creating image:', error);
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`Unable to create image: ${error.message}`);
+    }
+    throw error;
+  }
 }
 
 export async function updateImage(

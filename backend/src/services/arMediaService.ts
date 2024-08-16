@@ -1,6 +1,7 @@
 import config from '@/config';
+import { Readable } from 'stream';
 import crypto from 'crypto';
-import { ARMedia } from '@/schemas/arMediaSchema';
+import { ARMedia, arMediaSchema } from '@/schemas/arMediaSchema';
 import * as pullRequestService from '@/services/pullRequestService';
 import {
   createBranch,
@@ -58,30 +59,46 @@ export async function createARMedia(
   }
 
   const filename = file.originalname;
-  const path = `src/${routeId}/ar-media/${mediaType}/${filename}`;
-  const content = file.buffer.toString('base64');
+  const filePath = `src/${routeId}/ar-media/${mediaType}/${filename}`;
+
+  // Konvertiere den Buffer in einen lesbaren Stream
+  const contentStream = new Readable();
+  contentStream.push(file.buffer);
+  contentStream.push(null);
 
   const branchName = await createBranch(`create-ar-media-${filename}-${Date.now()}`);
 
-  await createOrUpdateFile(
-    path,
-    content,
-    `${config.commitPrefix} Add new AR media ${filename}`,
-    branchName,
-  );
+  try {
+    await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: filePath,
+      message: `${config.commitPrefix} Add new AR media ${filename}`,
+      content: file.buffer.toString('base64'),
+      branch: branchName,
+    });
 
-  const prTitle = generatePRTitle('Create', 'AR Media', filename);
-  const prDescription = generatePRDescription('Create', 'AR Media', filename);
-  await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
+    const prTitle = generatePRTitle('Create', 'AR Media', filename);
+    const prDescription = generatePRDescription('Create', 'AR Media', filename);
+    await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
-  const type = mediaType.slice(0, -1) as 'audio' | 'image' | 'video' | 'model';
+    const type = mediaType.slice(0, -1) as 'audio' | 'image' | 'video' | 'model';
 
-  return {
-    id: generateConsistentId(path),
-    type,
-    filename,
-    url: path,
-  };
+    const newMedia: ARMedia = {
+      id: generateConsistentId(filePath),
+      type,
+      filename,
+      url: filePath,
+    };
+
+    return arMediaSchema.parse(newMedia);
+  } catch (error) {
+    console.error('Error creating AR media:', error);
+    if (error instanceof Error && 'status' in error && error.status === 404) {
+      throw new NotFoundError(`Unable to create AR media: ${error.message}`);
+    }
+    throw error;
+  }
 }
 
 export async function updateARMedia(
