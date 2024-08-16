@@ -94,8 +94,7 @@ export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Prom
   const path = `src/${routeId}/${poiId}.md`;
   const content = matter.stringify(poiData.content || '', poiData);
 
-  const branchName = `create-poi-${poiId}-${Date.now()}`;
-  await createBranch(branchName);
+  const branchName = await createBranch(`create-poi-${poiId}-${Date.now()}`);
 
   await createOrUpdateFile(
     path,
@@ -158,8 +157,7 @@ export async function updatePOI(
         validationResult.data,
       );
 
-      const branchName = `update-poi-${poiId}-${Date.now()}`;
-      await createBranch(branchName);
+      const branchName = await createBranch(`update-poi-${poiId}-${Date.now()}`);
 
       await createOrUpdateFile(
         path,
@@ -198,8 +196,7 @@ export async function deletePOI(routeId: string, poiId: string): Promise<void> {
     });
 
     if ('sha' in file) {
-      const branchName = `delete-poi-${poiId}-${Date.now()}`;
-      await createBranch(branchName);
+      const branchName = await createBranch(`delete-poi-${poiId}-${Date.now()}`);
 
       await octokit.repos.deleteFile({
         owner,

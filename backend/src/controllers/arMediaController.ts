@@ -34,12 +34,20 @@ export async function createARMedia(req: Request, res: Response, next: NextFunct
   try {
     const { routeId } = req.params;
     const file = req.file as Express.Multer.File;
+    const mediaType = req.body.mediaType as string;
+
     if (!file) {
       throw new ValidationError('No file uploaded');
     }
-    const newARMedia = await arMediaService.createARMedia(routeId, file);
+    if (!mediaType) {
+      throw new ValidationError('No media type specified');
+    }
+
+    const newARMedia = await arMediaService.createARMedia(routeId, file, mediaType);
     res.status(201).json(newARMedia);
   } catch (error) {
+    console.log(error);
+
     next(error);
   }
 }

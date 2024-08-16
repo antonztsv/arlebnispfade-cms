@@ -44,17 +44,28 @@ export async function getARMediaById(routeId: string, mediaId: string): Promise<
   return media;
 }
 
-export async function createARMedia(routeId: string, file: Express.Multer.File): Promise<ARMedia> {
+export async function createARMedia(
+  routeId: string,
+  file: Express.Multer.File,
+  mediaType: string,
+): Promise<ARMedia> {
   if (!file) {
     throw new ValidationError('No file uploaded');
   }
 
+  if (!['audios', 'images', 'videos', 'models'].includes(mediaType)) {
+    throw new ValidationError('Invalid media type');
+  }
+
   const filename = file.originalname;
-  const path = `src/${routeId}/ar-media/${filename}`;
+  const path = `src/${routeId}/ar-media/${mediaType}/${filename}`;
   const content = file.buffer.toString('base64');
 
-  const branchName = `create-ar-media-${filename}-${Date.now()}`;
-  await createBranch(branchName);
+  const branchName = await createBranch(`create-ar-media-${filename}-${Date.now()}`);
+
+  console.log(`Attempting to create/update file: ${path}`);
+  console.log(`Branch name: ${branchName}`);
+  console.log(`Media type: ${mediaType}`);
 
   await createOrUpdateFile(
     path,
@@ -67,9 +78,11 @@ export async function createARMedia(routeId: string, file: Express.Multer.File):
   const prDescription = generatePRDescription('Create', 'AR Media', filename);
   await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
+  const type = mediaType.slice(0, -1) as 'audio' | 'image' | 'video' | 'model';
+
   return {
     id: generateConsistentId(path),
-    type: getMediaType(filename),
+    type,
     filename,
     url: path,
   };
@@ -95,8 +108,7 @@ export async function updateARMedia(
   const path = `src/${routeId}/ar-media/${existingMedia.filename}`;
   const content = file.buffer.toString('base64');
 
-  const branchName = `update-ar-media-${existingMedia.filename}-${Date.now()}`;
-  await createBranch(branchName);
+  const branchName = await createBranch(`update-ar-media-${existingMedia.filename}-${Date.now()}`);
 
   await createOrUpdateFile(
     path,
@@ -134,8 +146,9 @@ export async function deleteARMedia(routeId: string, mediaId: string): Promise<v
   });
 
   if ('sha' in file) {
-    const branchName = `delete-ar-media-${mediaToDelete.filename}-${Date.now()}`;
-    await createBranch(branchName);
+    const branchName = await createBranch(
+      `delete-ar-media-${mediaToDelete.filename}-${Date.now()}`,
+    );
 
     await octokit.repos.deleteFile({
       owner,
@@ -176,8 +189,7 @@ function getMediaType(filename: string): ARMedia['type'] {
     case 'mtl':
       return 'model';
     default:
-      console.warn(`Unrecognized file type for file: ${filename}`);
-      return 'unknown';
+      throw new Error(`Unrecognized file type for file: ${filename}`);
   }
 }
 

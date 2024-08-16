@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const arMediaSchema = z.object({
   id: z.string(),
-  type: z.enum(['audio', 'image', 'video', 'model', 'unknown']),
+  type: z.enum(['audio', 'image', 'video', 'model']),
   filename: z.string(),
   url: z.string(),
   poiId: z.string().optional(),

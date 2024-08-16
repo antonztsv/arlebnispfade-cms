@@ -113,8 +113,7 @@ export async function updateRoute(
 
     const updatedContent = matter.stringify(existingMarkdownContent, updatedRoute);
 
-    const branchName = `update-route-${routeId}-${Date.now()}`;
-    await createBranch(branchName);
+    const branchName = await createBranch(`update-route-${routeId}-${Date.now()}`);
 
     await createOrUpdateFile(
       path,

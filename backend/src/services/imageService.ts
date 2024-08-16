@@ -53,8 +53,7 @@ export async function createImage(routeId: string, file: Express.Multer.File): P
   const path = `src/${routeId}/images/${filename}`;
   const content = file.buffer.toString('base64');
 
-  const branchName = `create-image-${filename}-${Date.now()}`;
-  await createBranch(branchName);
+  const branchName = await createBranch(`create-image-${filename}-${Date.now()}`);
 
   await createOrUpdateFile(
     path,
@@ -94,8 +93,7 @@ export async function updateImage(
   const path = `src/${routeId}/images/${existingImage.filename}`;
   const content = file.buffer.toString('base64');
 
-  const branchName = `update-image-${existingImage.filename}-${Date.now()}`;
-  await createBranch(branchName);
+  const branchName = await createBranch(`update-image-${existingImage.filename}-${Date.now()}`);
 
   await createOrUpdateFile(
     path,
@@ -132,8 +130,7 @@ export async function deleteImage(routeId: string, imageId: string): Promise<voi
   });
 
   if ('sha' in file) {
-    const branchName = `delete-image-${imageToDelete.filename}-${Date.now()}`;
-    await createBranch(branchName);
+    const branchName = await createBranch(`delete-image-${imageToDelete.filename}-${Date.now()}`);
 
     await octokit.repos.deleteFile({
       owner,
