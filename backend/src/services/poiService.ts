@@ -152,9 +152,10 @@ export async function updatePOI(
         throw new ValidationError(`Invalid POI data: ${errorMessages.join(', ')}`);
       }
 
+      const { id, ...poiDataWithoutId } = validationResult.data;
       const updatedContent = matter.stringify(
         poiData.content || existingMarkdownContent,
-        validationResult.data,
+        poiDataWithoutId,
       );
 
       const branchName = await createBranch(`update-poi-${poiId}-${Date.now()}`);
