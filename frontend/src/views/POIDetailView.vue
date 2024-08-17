@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
-import { fetchPOIById, updatePOI, POI } from '@/api/pois';
+import { useRoute, useRouter } from 'vue-router';
+import { fetchPOIById, updatePOI, deletePOI, POI } from '@/api/pois';
 import { useToast } from 'vue-toastification';
 import ArConfigForm from '@/components/ArConfigForm.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const route = useRoute();
+const router = useRouter();
 const toast = useToast();
 
 const originalPoi = ref<POI | null>(null);
@@ -15,6 +16,7 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const isEditing = ref(false);
 const isSaving = ref(false);
+const isDeleting = ref(false);
 
 const editedPoi = ref<POI | null>(null);
 
@@ -64,6 +66,20 @@ const savePOI = async () => {
     toast.error('Fehler beim Aktualisieren des POI');
   } finally {
     isSaving.value = false;
+  }
+};
+
+const deletePOIHandler = async () => {
+  isDeleting.value = true;
+  try {
+    await deletePOI(routeId.value, poiId.value);
+    toast.success('POI erfolgreich gelöscht');
+    router.push({ name: 'route-detail', params: { routeId: routeId.value } });
+  } catch (e) {
+    console.error('Error deleting POI:', e);
+    toast.error('Fehler beim Löschen des POI');
+  } finally {
+    isDeleting.value = false;
   }
 };
 
@@ -204,34 +220,45 @@ const imageUrl = computed(() => {
         />
 
         <div class="mt-6 space-x-2">
-          <button
-            v-if="!isEditing"
-            @click="toggleEdit"
-            type="button"
-            :disabled="isSaving"
-            class="rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
-          >
-            <span class="pi pi-file-edit mr-1"></span> Bearbeiten
-          </button>
-          <button
-            v-if="isEditing"
-            type="submit"
-            :disabled="isSaving"
-            class="rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
-          >
-            <span v-if="isSaving" class="pi pi-spin pi-spinner mr-1"></span>
-            <span v-else class="pi pi-save mr-1"></span>
-            {{ isSaving ? 'Speichert...' : 'Speichern' }}
-          </button>
-          <button
-            v-if="isEditing"
-            @click="toggleEdit"
-            type="button"
-            :disabled="isSaving"
-            class="rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-100"
-          >
-            Abbrechen
-          </button>
+          <template v-if="!isEditing">
+            <button
+              @click="toggleEdit"
+              type="button"
+              :disabled="isSaving || isDeleting"
+              class="rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
+            >
+              <span class="pi pi-file-edit mr-1"></span> Bearbeiten
+            </button>
+          </template>
+          <template v-else>
+            <button
+              type="submit"
+              :disabled="isSaving || isDeleting"
+              class="rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
+            >
+              <span v-if="isSaving" class="pi pi-spin pi-spinner mr-1"></span>
+              <span v-else class="pi pi-save mr-1"></span>
+              {{ isSaving ? 'Speichert...' : 'Speichern' }}
+            </button>
+            <button
+              @click="toggleEdit"
+              type="button"
+              :disabled="isSaving || isDeleting"
+              class="rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-100"
+            >
+              Abbrechen
+            </button>
+            <button
+              @click="deletePOIHandler"
+              type="button"
+              :disabled="isSaving || isDeleting"
+              class="rounded bg-red-500 p-2 px-4 text-white hover:bg-red-600 active:bg-red-700 disabled:bg-gray-400"
+            >
+              <span v-if="isDeleting" class="pi pi-spin pi-spinner mr-1"></span>
+              <span v-else class="pi pi-trash mr-1"></span>
+              {{ isDeleting ? 'Löscht...' : 'Löschen' }}
+            </button>
+          </template>
         </div>
       </form>
     </div>

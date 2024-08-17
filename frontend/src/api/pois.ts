@@ -75,3 +75,26 @@ export async function updatePOI(routeId: string, poiId: string, poi: Partial<POI
   }
   return response.json();
 }
+
+export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Promise<POI> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}/pois`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(poiData),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to create POI');
+  }
+  return response.json();
+}
+
+export async function deletePOI(routeId: string, poiId: string): Promise<void> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}/pois/${poiId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete POI');
+  }
+}
