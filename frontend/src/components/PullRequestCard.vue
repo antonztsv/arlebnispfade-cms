@@ -132,6 +132,7 @@ const closePR = async (pullRequestNumber: number) => {
           :disabled="mergingPR || closingPR"
         >
           <span v-if="mergingPR" class="pi pi-spin pi-spinner mr-2"></span>
+          <span v-else class="pi pi-save mr-2"></span>
           {{ mergingPR ? 'Wird angenommen...' : 'Annehmen' }}
         </button>
         <button
@@ -144,6 +145,7 @@ const closePR = async (pullRequestNumber: number) => {
           :disabled="mergingPR || closingPR"
         >
           <span v-if="closingPR" class="pi pi-spin pi-spinner mr-2"></span>
+          <span v-else class="pi pi-trash mr-2"></span>
           {{ closingPR ? 'Wird gelöscht...' : 'Löschen' }}
         </button>
       </div>

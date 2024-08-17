@@ -104,8 +104,7 @@ const saveChanges = async () => {
       </div>
     </RouterLink>
     <div class="p-4">
-      <LoadingSpinner v-if="isSaving" />
-      <div v-else>
+      <div>
         <div class="mb-4">
           <label for="route-title" class="mb-1 block text-sm font-medium text-gray-700"
             >Titel</label
@@ -151,29 +150,27 @@ const saveChanges = async () => {
         </div>
 
         <button
+          v-if="!isEditing"
           @click="toggleEdit"
-          :class="[
-            'mr-2 rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700',
-            { hidden: isEditing },
-          ]"
+          class="mr-2 rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700"
         >
           <span class="pi pi-file-edit mr-1"></span> Bearbeiten
         </button>
         <button
+          v-if="isEditing"
           @click="saveChanges"
-          :class="[
-            'mr-2 rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700',
-            { hidden: !isEditing },
-          ]"
+          :disabled="isSaving"
+          class="mr-2 rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-blue-300"
         >
-          <span class="pi pi-save mr-1"></span>Speichern
+          <span v-if="isSaving" class="pi pi-spin pi-spinner mr-1"></span>
+          <span v-else class="pi pi-save mr-1"></span>
+          {{ isSaving ? 'Speichert...' : 'Speichern' }}
         </button>
         <button
+          v-if="isEditing"
           @click="toggleEdit"
-          :class="[
-            'rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400',
-            { hidden: !isEditing },
-          ]"
+          :disabled="isSaving"
+          class="rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-100"
         >
           Abbrechen
         </button>
