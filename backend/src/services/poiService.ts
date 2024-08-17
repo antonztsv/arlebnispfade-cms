@@ -1,6 +1,6 @@
 import config from '@/config';
 import matter from 'gray-matter';
-import { poiSchema, POI } from '@/schemas/poiSchema';
+import { poiSchema, poiSchemaWithContent, POI } from '@/schemas/poiSchema';
 import * as pullRequestService from '@/services/pullRequestService';
 import {
   createBranch,
@@ -85,29 +85,32 @@ export async function getPOIById(routeId: string, poiId: string): Promise<POI> {
 }
 
 export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Promise<POI> {
-  const validation = validatePOI(poiData);
+  const { content, ...frontmatterData } = poiData;
+
+  const validation = validatePOI(frontmatterData);
   if (!validation.isValid) {
     throw new ValidationError(`Invalid POI data: ${validation.errors.join(', ')}`);
   }
 
-  const poiId = generatePoiId(poiData.title);
+  const poiId = generatePoiId(frontmatterData.title);
   const path = `src/${routeId}/${poiId}.md`;
-  const content = matter.stringify(poiData.content || '', poiData);
+  const fileContent = matter.stringify(content || '', frontmatterData);
 
   const branchName = await createBranch(`create-poi-${poiId}-${Date.now()}`);
 
   await createOrUpdateFile(
     path,
-    content,
+    fileContent,
     `${config.commitPrefix} Create new POI ${poiId}`,
     branchName,
   );
 
   const prTitle = generatePRTitle('Create', 'POI', poiId);
-  const prDescription = generatePRDescription('Create', 'POI', poiData.title);
+  const prDescription = generatePRDescription('Create', 'POI', frontmatterData.title);
   await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
-  return { ...poiData, id: poiId } as POI;
+  const createdPOI = { ...frontmatterData, id: poiId, content };
+  return poiSchemaWithContent.parse(createdPOI);
 }
 
 export async function updatePOI(
@@ -129,15 +132,18 @@ export async function updatePOI(
       const { data: existingFrontmatter, content: existingMarkdownContent } =
         matter(existingContent);
 
+      const { content, ...frontmatterData } = poiData;
+
       const updatedPOI = {
         ...existingFrontmatter,
-        ...poiData,
+        ...frontmatterData,
         id: poiId,
+        type: frontmatterData.type || existingFrontmatter.type,
       };
 
       // Check for changes
       const frontmatterChanges = detectChanges(existingFrontmatter, updatedPOI);
-      const contentChanged = poiData.content && poiData.content !== existingMarkdownContent;
+      const contentChanged = content !== undefined && content !== existingMarkdownContent;
 
       // No changes detected
       if (!frontmatterChanges && !contentChanged) {
@@ -154,7 +160,7 @@ export async function updatePOI(
 
       const { id, ...poiDataWithoutId } = validationResult.data;
       const updatedContent = matter.stringify(
-        poiData.content || existingMarkdownContent,
+        content !== undefined ? content : existingMarkdownContent,
         poiDataWithoutId,
       );
 
@@ -172,10 +178,13 @@ export async function updatePOI(
       const prDescription = generatePRDescription('Update', 'POI', updatedPOI.title || poiId);
       await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
-      return {
+      const finalPOI = {
         ...validationResult.data,
-        content: poiData.content || existingMarkdownContent,
+        id,
+        content: content !== undefined ? content : existingMarkdownContent,
       };
+
+      return poiSchemaWithContent.parse(finalPOI);
     } else {
       throw new Error('Unexpected response structure from GitHub API');
     }
@@ -229,7 +238,7 @@ function generatePoiId(title: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-function validatePOI(poi: Partial<POI>): { isValid: boolean; errors: string[] } {
+function validatePOI(poi: Partial<Omit<POI, 'content'>>): { isValid: boolean; errors: string[] } {
   const result = poiSchema.safeParse(poi);
   if (result.success) {
     return { isValid: true, errors: [] };

@@ -4,6 +4,7 @@ export const poiSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   image: z.string().min(1, 'Image is required'),
+  type: z.string().min(1, 'Type is required'),
   layout: z.string().min(1, 'Layout is required'),
   gmaps: z.string().url('Invalid Google Maps URL').nullish().optional(),
   coords: z.tuple([z.number(), z.number()]).describe('Coordinates must be an array of two numbers'),
@@ -17,7 +18,10 @@ export const poiSchema = z.object({
     audio: z.object({ filename: z.string() }).optional(),
     nft: z.array(z.any()).optional(),
   }),
+});
+
+export const poiSchemaWithContent = poiSchema.extend({
   content: z.string().optional(),
 });
 
-export type POI = z.infer<typeof poiSchema>;
+export type POI = z.infer<typeof poiSchemaWithContent>;
