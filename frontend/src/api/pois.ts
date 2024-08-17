@@ -1,20 +1,27 @@
 import { API_BASE_URL, authenticatedFetch } from './config';
 
-type ar = {
-  content: string;
-  location: string;
+type ArNft = {
   type: string;
-  nft: NFT[];
-};
-
-type NFT = {
   id: string;
-  model: string;
   name: string;
+  model?: string;
   position: string;
   rotation: string;
   scale: string;
+};
+
+type ArVideo = {
   type: string;
+  url: string;
+};
+
+type ArAudio = {
+  filename: string;
+};
+
+type ArModel = {
+  type: string;
+  url: string;
 };
 
 export type POI = {
@@ -28,7 +35,15 @@ export type POI = {
   arDesc: string;
   content?: string;
   type: string;
-  ar: ar;
+  ar: {
+    type: string;
+    content: string;
+    location: string;
+    audio?: ArAudio[];
+    video?: ArVideo[];
+    model?: ArModel[];
+    nft: ArNft[];
+  };
 };
 
 export async function fetchPOIsForRoute(routeId: string): Promise<POI[]> {
@@ -43,6 +58,20 @@ export async function fetchPOIById(routeId: string, poiId: string): Promise<POI>
   const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}/pois/${poiId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch POI');
+  }
+  return response.json();
+}
+
+export async function updatePOI(routeId: string, poiId: string, poi: Partial<POI>): Promise<POI> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/routes/${routeId}/pois/${poiId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(poi),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update POI');
   }
   return response.json();
 }

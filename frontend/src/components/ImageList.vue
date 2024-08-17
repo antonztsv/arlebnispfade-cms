@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PropType, ref } from 'vue';
+import { computed, PropType, ref } from 'vue';
 import { deleteImage, addImage, Image } from '@/api/images';
 import { useToast } from 'vue-toastification';
 import { useRoute } from 'vue-router';
@@ -7,7 +7,7 @@ import { useRoute } from 'vue-router';
 const toast = useToast();
 
 const route = useRoute();
-const routeId = route.params.routeId as string;
+const routeId = computed(() => route.params.routeId as string);
 const deletingImage = ref<string | null>(null);
 const uploadingImage = ref<File | null>(null);
 const isSmallImage = ref(false);
@@ -36,7 +36,7 @@ const handleImageUpload = async (event: Event) => {
   if (input.files && input.files[0]) {
     try {
       uploadingImage.value = input.files[0];
-      await addImage(routeId, input.files[0], isSmallImage.value);
+      await addImage(routeId.value, input.files[0], isSmallImage.value);
       toast.success('Änderung erfolgreich gespeichert');
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -50,7 +50,7 @@ const handleImageUpload = async (event: Event) => {
 const handleImageDelete = async (image: Image) => {
   deletingImage.value = image.id;
   try {
-    await deleteImage(routeId, image.id);
+    await deleteImage(routeId.value, image.id);
     toast.success('Änderung erfolgreich gespeichert');
   } catch (error) {
     console.error('Error deleting image:', error);

@@ -1,26 +1,22 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { fetchPOIById, POI } from '@/api/pois';
+import { fetchPOIById, updatePOI, POI } from '@/api/pois';
+import { useToast } from 'vue-toastification';
+import ArConfigForm from '@/components/ArConfigForm.vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const route = useRoute();
+const toast = useToast();
+
+const originalPoi = ref<POI | null>(null);
 const poi = ref<POI | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const isEditing = ref(false);
+const isSaving = ref(false);
 
-const defaultPOI: POI = {
-  id: '',
-  title: '',
-  image: '',
-  layout: '',
-  gmaps: null,
-  coords: [0, 0],
-  info: '',
-  arDesc: '',
-};
-
-const editedPoi = ref<POI>(defaultPOI);
+const editedPoi = ref<POI | null>(null);
 
 const routeId = computed(() => route.params.routeId as string);
 const poiId = computed(() => route.params.poiId as string);
@@ -34,8 +30,9 @@ const loadPOI = async () => {
   error.value = null;
   try {
     const fetchedPOI = await fetchPOIById(routeId.value, poiId.value);
-    poi.value = fetchedPOI;
-    editedPoi.value = { ...fetchedPOI };
+    originalPoi.value = JSON.parse(JSON.stringify(fetchedPOI)); // Deep clone
+    poi.value = JSON.parse(JSON.stringify(fetchedPOI)); // Deep clone
+    editedPoi.value = JSON.parse(JSON.stringify(fetchedPOI)); // Deep clone
   } catch (e) {
     error.value = 'Fehler beim Laden des POI. Bitte versuchen Sie es später erneut.';
     console.error('Error fetching POI:', e);
@@ -47,129 +44,196 @@ const loadPOI = async () => {
 const toggleEdit = () => {
   isEditing.value = !isEditing.value;
   if (!isEditing.value && poi.value) {
-    editedPoi.value = { ...poi.value };
+    editedPoi.value = JSON.parse(JSON.stringify(poi.value)); // Reset to current POI when cancelling
   }
 };
 
 const savePOI = async () => {
-  // Todo: api call to save editedPoi
-  if (poi.value) {
-    poi.value = { ...editedPoi.value };
+  if (!editedPoi.value) return;
+
+  isSaving.value = true;
+  try {
+    await updatePOI(routeId.value, poiId.value, editedPoi.value);
+    isEditing.value = false;
+    toast.success('Änderungen erfolgreich gespeichert');
+    // Reset POI to its original state after saving
+    poi.value = JSON.parse(JSON.stringify(originalPoi.value));
+    editedPoi.value = JSON.parse(JSON.stringify(originalPoi.value));
+  } catch (e) {
+    console.error('Error updating POI:', e);
+    toast.error('Fehler beim Aktualisieren des POI');
+  } finally {
+    isSaving.value = false;
   }
-  isEditing.value = false;
 };
+
+const imageUrl = computed(() => {
+  if (!poi.value) return '';
+  return `https://raw.githubusercontent.com/${import.meta.env.VITE_GH_OWNER}/${
+    import.meta.env.VITE_GH_REPO
+  }/main/src/${routeId.value}/images/${poi.value.image}`;
+});
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-8">
-    <div v-if="loading" class="text-center">
-      <p>Lade POI-Details...</p>
-    </div>
-    <div v-else-if="error" class="text-center text-red-600">
-      <p>{{ error }}</p>
-    </div>
-    <div v-else-if="poi" class="rounded-lg bg-white p-6 shadow-lg">
-      <div class="mb-6 flex items-center justify-between">
-        <h1 class="text-3xl font-bold">{{ poi.title }}</h1>
-        <button
-          @click="toggleEdit"
-          class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-        >
-          {{ isEditing ? 'Abbrechen' : 'Bearbeiten' }}
-        </button>
-      </div>
+    <LoadingSpinner v-if="loading" />
+    <div v-else-if="poi && editedPoi" class="rounded-lg border bg-gray-100 p-6">
+      <h1 class="mb-4 text-3xl font-semibold">{{ poi.title }}</h1>
 
-      <div v-if="!isEditing">
-        <img :src="poi.image" :alt="poi.title" class="mb-4 h-64 w-full rounded-lg object-cover" />
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <h2 class="mb-2 text-xl font-semibold">Information</h2>
-            <p>{{ poi.info }}</p>
-          </div>
-          <div>
-            <h2 class="mb-2 text-xl font-semibold">AR-Beschreibung</h2>
-            <p>{{ poi.arDesc }}</p>
-          </div>
-        </div>
-        <div v-if="poi.gmaps" class="mt-4">
-          <a :href="poi.gmaps" target="_blank" class="text-blue-600 hover:underline">
-            Auf Google Maps anzeigen
-          </a>
-        </div>
-        <div v-if="poi.content" class="mt-4">
-          <h2 class="mb-2 text-xl font-semibold">Zusätzlicher Inhalt</h2>
-          <div v-html="poi.content"></div>
-        </div>
-      </div>
+      <img :src="imageUrl" :alt="poi.title" class="mb-6 w-1/2 rounded" />
 
-      <div v-else>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Titel</label>
-            <input
-              v-model="editedPoi.title"
-              type="text"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Bild URL</label>
-            <input
-              v-model="editedPoi.image"
-              type="text"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Information</label>
-            <textarea
-              v-model="editedPoi.info"
-              rows="3"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            ></textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">AR-Beschreibung</label>
-            <textarea
-              v-model="editedPoi.arDesc"
-              rows="3"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            ></textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Google Maps URL</label>
-            <input
-              v-model="editedPoi.gmaps"
-              type="text"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Zusätzlicher Inhalt</label>
-            <textarea
-              v-model="editedPoi.content"
-              rows="5"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            ></textarea>
-          </div>
+      <form @submit.prevent="savePOI">
+        <div class="mb-4">
+          <label for="poi-title" class="mb-1 block text-sm font-medium text-gray-700">Titel</label>
+          <input
+            id="poi-title"
+            v-model="editedPoi.title"
+            :disabled="!isEditing || isSaving"
+            class="w-full rounded border border-gray-300 p-2"
+            required
+          />
         </div>
-        <div class="mt-6">
-          <button
-            @click="savePOI"
-            class="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+
+        <div class="mb-4">
+          <label for="poi-image" class="mb-1 block text-sm font-medium text-gray-700">Bild</label>
+          <input
+            id="poi-image"
+            v-model="editedPoi.image"
+            :disabled="!isEditing || isSaving"
+            class="w-full rounded border border-gray-300 p-2"
+            required
+          />
+        </div>
+
+        <div class="mb-4">
+          <label for="poi-type" class="mb-1 block text-sm font-medium text-gray-700">Typ</label>
+          <input
+            id="poi-type"
+            v-model="editedPoi.type"
+            :disabled="!isEditing || isSaving"
+            class="w-full rounded border border-gray-300 p-2"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label for="poi-layout" class="mb-1 block text-sm font-medium text-gray-700"
+            >Layout</label
           >
-            Speichern
+          <select
+            id="poi-layout"
+            v-model="editedPoi.layout"
+            :disabled="!isEditing || isSaving"
+            class="w-full rounded border border-gray-300 p-2"
+            required
+          >
+            <option value="poi">POI</option>
+            <option value="route">Route</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label for="poi-gmaps" class="mb-1 block text-sm font-medium text-gray-700"
+            >Google Maps URL</label
+          >
+          <input
+            id="poi-gmaps"
+            v-model="editedPoi.gmaps"
+            :disabled="!isEditing || isSaving"
+            class="w-full rounded border border-gray-300 p-2"
+            type="url"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label for="poi-coords" class="mb-1 block text-sm font-medium text-gray-700"
+            >Koordinaten</label
+          >
+          <div class="flex space-x-2">
+            <input
+              id="poi-coords-lat"
+              v-model="editedPoi.coords[0]"
+              :disabled="!isEditing || isSaving"
+              class="w-1/2 rounded border border-gray-300 p-2"
+              type="number"
+              step="any"
+              placeholder="Breitengrad"
+            />
+            <input
+              id="poi-coords-lon"
+              v-model="editedPoi.coords[1]"
+              :disabled="!isEditing || isSaving"
+              class="w-1/2 rounded border border-gray-300 p-2"
+              type="number"
+              step="any"
+              placeholder="Längengrad"
+            />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="poi-info" class="mb-1 block text-sm font-medium text-gray-700">Info</label>
+          <textarea
+            id="poi-info"
+            v-model="editedPoi.info"
+            :disabled="!isEditing || isSaving"
+            rows="5"
+            class="w-full rounded border border-gray-300 p-2"
+          ></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label for="poi-arDesc" class="mb-1 block text-sm font-medium text-gray-700"
+            >AR Beschreibung</label
+          >
+          <textarea
+            id="poi-arDesc"
+            v-model="editedPoi.arDesc"
+            :disabled="!isEditing || isSaving"
+            rows="5"
+            class="w-full rounded border border-gray-300 p-2"
+          ></textarea>
+        </div>
+
+        <!-- AR Konfiguration -->
+        <ArConfigForm
+          v-if="editedPoi.ar"
+          v-model:arConfig="editedPoi.ar"
+          :isEditing="isEditing"
+          :isSaving="isSaving"
+        />
+
+        <div class="mt-6 space-x-2">
+          <button
+            v-if="!isEditing"
+            @click="toggleEdit"
+            type="button"
+            :disabled="isSaving"
+            class="rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
+          >
+            <span class="pi pi-file-edit mr-1"></span> Bearbeiten
+          </button>
+          <button
+            v-if="isEditing"
+            type="submit"
+            :disabled="isSaving"
+            class="rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
+          >
+            <span v-if="isSaving" class="pi pi-spin pi-spinner mr-1"></span>
+            <span v-else class="pi pi-save mr-1"></span>
+            {{ isSaving ? 'Speichert...' : 'Speichern' }}
+          </button>
+          <button
+            v-if="isEditing"
+            @click="toggleEdit"
+            type="button"
+            :disabled="isSaving"
+            class="rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-100"
+          >
+            Abbrechen
           </button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
-</template> -->
-
-<script setup lang="ts"></script>
-
-<template>
-  <div></div>
 </template>
-
-<style scoped></style>

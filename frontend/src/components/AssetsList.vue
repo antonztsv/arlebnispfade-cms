@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ListTitle from '@/components/ListTitle.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { fetchARMedia, ARMedia } from '@/api/arMedia';
@@ -9,7 +9,7 @@ import ImageList from '@/components/ImageList.vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const routeId = route.params.routeId as string;
+const routeId = computed(() => route.params.routeId as string);
 const arMedia = ref<ARMedia[]>([]);
 const images = ref<Image[]>([]);
 const loadingARMedia = ref(true);
@@ -24,7 +24,7 @@ onMounted(async () => {
 
 async function loadARMedia() {
   try {
-    arMedia.value = await fetchARMedia(routeId);
+    arMedia.value = await fetchARMedia(routeId.value);
   } catch (error) {
     console.error('Error fetching AR media:', error);
     errorARMedia.value = 'Fehler beim Laden der AR-Medien.';
@@ -35,7 +35,7 @@ async function loadARMedia() {
 
 async function loadImages() {
   try {
-    images.value = await fetchImages(routeId);
+    images.value = await fetchImages(routeId.value);
   } catch (error) {
     console.error('Error fetching images:', error);
     errorImages.value = 'Fehler beim Laden der Bilder.';

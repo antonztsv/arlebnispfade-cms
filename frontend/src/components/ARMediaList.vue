@@ -10,7 +10,7 @@ const githubRepo = import.meta.env.VITE_GH_REPO as string;
 const toast = useToast();
 
 const route = useRoute();
-const routeId = route.params.routeId as string;
+const routeId = computed(() => route.params.routeId as string);
 const deletingMedia = ref<string | null>(null);
 const uploadingMedia = ref<File | null>(null);
 const selectedMediaType = ref<string>('');
@@ -43,7 +43,7 @@ const handleARMediaUpload = async (event: Event) => {
   if (input.files && input.files[0] && selectedMediaType.value) {
     try {
       uploadingMedia.value = input.files[0];
-      await addARMedia(routeId, input.files[0], selectedMediaType.value);
+      await addARMedia(routeId.value, input.files[0], selectedMediaType.value);
       toast.success('Änderung erfolgreich gespeichert');
     } catch (error) {
       console.error('Error uploading AR media:', error);
@@ -59,7 +59,7 @@ const handleARMediaUpload = async (event: Event) => {
 const handleARMediaDelete = async (media: ARMedia) => {
   try {
     deletingMedia.value = media.id;
-    await deleteARMedia(routeId, media.id);
+    await deleteARMedia(routeId.value, media.id);
     toast.success('Änderung erfolgreich gespeichert');
   } catch (error) {
     console.error('Error deleting AR media:', error);

@@ -9,15 +9,15 @@ import POICard from '@/components/POICard.vue';
 
 const route = useRoute();
 
+const routeId = computed(() => route.params.routeId as string);
 const pois = ref<POI[]>([]);
 const loading = ref(true);
 const currentRoute = ref<Route | null>(null);
 
 onMounted(async () => {
   try {
-    const routeId = route.params.routeId as string;
-    currentRoute.value = await fetchRoute(routeId);
-    pois.value = await fetchPOIsForRoute(routeId);
+    currentRoute.value = await fetchRoute(routeId.value);
+    pois.value = await fetchPOIsForRoute(routeId.value);
   } catch (error) {
     console.error('Error fetching POIs:', error);
   } finally {
