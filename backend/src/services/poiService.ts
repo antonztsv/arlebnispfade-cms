@@ -84,9 +84,13 @@ export async function getPOIById(routeId: string, poiId: string): Promise<POI> {
   }
 }
 
-export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Promise<POI> {
-  const { content, ...frontmatterData } = poiData;
+export async function createPOI(routeId: string, poiData: Partial<Omit<POI, 'id'>>): Promise<POI> {
+  // add default values if not provided
+  const completePoiData = provideDefaultValues(poiData);
 
+  const { content, ...frontmatterData } = completePoiData;
+
+  // validate POI data
   const validation = validatePOI(frontmatterData);
   if (!validation.isValid) {
     throw new ValidationError(`Invalid POI data: ${validation.errors.join(', ')}`);
@@ -98,19 +102,24 @@ export async function createPOI(routeId: string, poiData: Omit<POI, 'id'>): Prom
 
   const branchName = await createBranch(`create-poi-${poiId}-${Date.now()}`);
 
-  await createOrUpdateFile(
-    path,
-    fileContent,
-    `${config.commitPrefix} Create new POI ${poiId}`,
-    branchName,
-  );
+  try {
+    await createOrUpdateFile(
+      path,
+      fileContent,
+      `${config.commitPrefix} Create new POI ${poiId}`,
+      branchName,
+    );
 
-  const prTitle = generatePRTitle('Create', 'POI', poiId);
-  const prDescription = generatePRDescription('Create', 'POI', frontmatterData.title);
-  await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
+    const prTitle = generatePRTitle('Create', 'POI', poiId);
+    const prDescription = generatePRDescription('Create', 'POI', frontmatterData.title);
+    await pullRequestService.createPullRequest('main', branchName, prTitle, prDescription);
 
-  const createdPOI = { ...frontmatterData, id: poiId, content };
-  return poiSchemaWithContent.parse(createdPOI);
+    const createdPOI = { ...frontmatterData, id: poiId, content };
+    return poiSchemaWithContent.parse(createdPOI);
+  } catch (error) {
+    console.error('Error creating POI:', error);
+    throw new Error('Failed to create POI');
+  }
 }
 
 export async function updatePOI(
@@ -248,4 +257,24 @@ function validatePOI(poi: Partial<Omit<POI, 'content'>>): { isValid: boolean; er
       errors: result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`),
     };
   }
+}
+
+function provideDefaultValues(poiData: Partial<Omit<POI, 'id'>>): Omit<POI, 'id'> {
+  return {
+    title: poiData.title || 'Neuer POI',
+    image: poiData.image || 'default-image.jpg',
+    type: poiData.type || 'default',
+    layout: poiData.layout || 'poi',
+    gmaps: poiData.gmaps || null,
+    coords: poiData.coords || [0, 0],
+    info: poiData.info || 'Keine Informationen verfügbar',
+    arDesc: poiData.arDesc || 'Keine AR-Beschreibung verfügbar',
+    content: poiData.content || '',
+    ar: {
+      type: poiData.ar?.type || 'default',
+      content: poiData.ar?.content || 'Kein AR-Inhalt verfügbar',
+      location: poiData.ar?.location || 'Keine AR-Location verfügbar',
+      nft: poiData.ar?.nft || [],
+    },
+  };
 }
