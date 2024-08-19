@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import ListTitle from '@/components/ListTitle.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import ListTitle from '@/components/utils/ListTitle.vue';
+import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
 import { fetchARMedia, ARMedia } from '@/api/arMedia';
 import { fetchImages, Image } from '@/api/images';
-import ARMediaList from '@/components/ARMediaList.vue';
-import ImageList from '@/components/ImageList.vue';
+import ARMediaList from '@/components/media/ARMediaList.vue';
+import ImageList from '@/components/media/ImageList.vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();

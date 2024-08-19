@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PullRequestList from '@/components/PullRequestList.vue';
+import PullRequestList from '@/components/pullRequests/PullRequestList.vue';
 </script>
 
 <template>

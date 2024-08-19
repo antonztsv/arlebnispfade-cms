@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, PropType, ref } from 'vue';
 import { updateRoute, Route } from '@/api/routes';
-import LoadingSpinner from './LoadingSpinner.vue';
+import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();

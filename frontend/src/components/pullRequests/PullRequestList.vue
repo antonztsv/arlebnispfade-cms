@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { fetchPullRequests, PullRequest } from '@/api/pullRequests';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import PullRequestCard from '@/components/PullRequestCard.vue';
-import LinkTitle from '@/components/LinkTitle.vue';
+import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
+import PullRequestCard from '@/components/pullRequests/PullRequestCard.vue';
+import LinkTitle from '@/components/utils/LinkTitle.vue';
 
 const pullRequests = ref<PullRequest[]>([]);
 const loading = ref(true);

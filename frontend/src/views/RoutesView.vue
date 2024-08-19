@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import RoutesList from '@/components/RoutesList.vue';
+import RoutesList from '@/components/routes/RoutesList.vue';
 </script>
 
 <template>

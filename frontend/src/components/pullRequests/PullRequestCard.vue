@@ -3,11 +3,14 @@ import { PropType, ref } from 'vue';
 import { PullRequest } from '@/api/pullRequests';
 import { mergePullRequest, closePullRequest } from '@/api/pullRequests';
 import { useToast } from 'vue-toastification';
+import ConfirmDialog from '@/components/utils/ConfirmDialog.vue';
 
 const toast = useToast();
 
 const mergingPR = ref(false);
 const closingPR = ref(false);
+const showMergeConfirm = ref(false);
+const showCloseConfirm = ref(false);
 
 defineProps({
   pullRequest: {
@@ -58,6 +61,24 @@ const closePR = async (pullRequestNumber: number) => {
   } finally {
     closingPR.value = false;
   }
+};
+
+const confirmMerge = (pullRequestNumber: number) => {
+  showMergeConfirm.value = true;
+};
+
+const confirmClose = (pullRequestNumber: number) => {
+  showCloseConfirm.value = true;
+};
+
+const handleMergeConfirm = async (pullRequestNumber: number) => {
+  showMergeConfirm.value = false;
+  await mergePR(pullRequestNumber);
+};
+
+const handleCloseConfirm = async (pullRequestNumber: number) => {
+  showCloseConfirm.value = false;
+  await closePR(pullRequestNumber);
 };
 </script>
 
@@ -123,31 +144,39 @@ const closePR = async (pullRequestNumber: number) => {
           <span class="pi pi-github"></span>
         </a>
         <button
-          :class="[
-            'mr-2 rounded bg-blue-500 p-2 px-4 text-white disabled:text-gray-200',
-            { 'cursor-not-allowed': mergingPR },
-            { 'hover:bg-blue-600 active:bg-blue-700': !mergingPR },
-          ]"
-          @click="mergePR(pullRequest.number)"
+          @click="confirmMerge(pullRequest.number)"
           :disabled="mergingPR || closingPR"
+          class="mr-2 rounded bg-blue-500 p-2 px-4 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
         >
           <span v-if="mergingPR" class="pi pi-spin pi-spinner mr-2"></span>
           <span v-else class="pi pi-save mr-2"></span>
           {{ mergingPR ? 'Wird angenommen...' : 'Annehmen' }}
         </button>
         <button
-          :class="[
-            'mr-2 rounded bg-gray-200 p-2 px-4 disabled:text-gray-400',
-            { 'cursor-not-allowed': closingPR },
-            { 'hover:bg-gray-300 active:bg-gray-400': !closingPR },
-          ]"
-          @click="closePR(pullRequest.number)"
+          @click="confirmClose(pullRequest.number)"
           :disabled="mergingPR || closingPR"
+          class="mr-2 rounded bg-gray-200 p-2 px-4 hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-400"
         >
           <span v-if="closingPR" class="pi pi-spin pi-spinner mr-2"></span>
           <span v-else class="pi pi-trash mr-2"></span>
           {{ closingPR ? 'Wird gelöscht...' : 'Löschen' }}
         </button>
+
+        <ConfirmDialog
+          :show="showMergeConfirm"
+          title="Änderung annehmen"
+          message="Sind Sie sicher, dass Sie diese Änderung annehmen möchten?"
+          @confirm="handleMergeConfirm(pullRequest.number)"
+          @cancel="showMergeConfirm = false"
+        />
+
+        <ConfirmDialog
+          :show="showCloseConfirm"
+          title="Änderung löschen"
+          message="Sind Sie sicher, dass Sie diese Änderung löschen möchten?"
+          @confirm="handleCloseConfirm(pullRequest.number)"
+          @cancel="showCloseConfirm = false"
+        />
       </div>
     </div>
   </div>

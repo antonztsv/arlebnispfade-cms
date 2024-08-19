@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import POIsList from '@/components/POIsList.vue';
-import AssetsList from '@/components/AssetsList.vue';
+import POIsList from '@/components/pois/POIsList.vue';
+import AssetsList from '@/components/media/AssetsList.vue';
 </script>
 
 <template>

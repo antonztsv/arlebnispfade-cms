@@ -34,6 +34,13 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/routes/:routeId/pois',
+      name: 'route-pois',
+      redirect(to) {
+        return { name: 'route-detail', params: { routeId: to.params.routeId } };
+      },
+    },
+    {
       path: '/routes/:routeId/pois/:poiId',
       name: 'poi-detail',
       component: POIDetailView,

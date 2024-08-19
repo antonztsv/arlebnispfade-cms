@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchRoutes, Route } from '@/api/routes';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import RouteCard from '@/components/RouteCard.vue';
-import LinkTitle from '@/components/LinkTitle.vue';
+import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
+import RouteCard from '@/components/routes/RouteCard.vue';
+import LinkTitle from '@/components/utils/LinkTitle.vue';
 
 const routes = ref<Route[]>([]);
 const loading = ref(true);

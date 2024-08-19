@@ -1,27 +1,38 @@
 import { API_BASE_URL, authenticatedFetch } from './config';
 
-type ArNft = {
+export type ArNft = {
   type: string;
   id: string;
   name: string;
   model?: string;
-  position: string;
-  rotation: string;
-  scale: string;
+  position?: string;
+  rotation?: string;
+  scale?: string;
 };
 
-type ArVideo = {
-  type: string;
-  url: string;
+export type ArVideo = {
+  type: 'filename' | 'url';
+  url?: string;
+  filename?: string;
 };
 
-type ArAudio = {
+export type ArAudio = {
   filename: string;
 };
 
-type ArModel = {
+export type ArModel = {
   type: string;
   url: string;
+};
+
+export type POIar = {
+  type: string;
+  content: string;
+  location: string;
+  audio?: ArAudio;
+  video?: ArVideo[];
+  model?: ArModel[];
+  nft: ArNft[];
 };
 
 export type POI = {
@@ -35,15 +46,7 @@ export type POI = {
   arDesc: string;
   content?: string;
   type: string;
-  ar: {
-    type: string;
-    content: string;
-    location: string;
-    audio?: ArAudio[];
-    video?: ArVideo[];
-    model?: ArModel[];
-    nft: ArNft[];
-  };
+  ar: POIar;
 };
 
 export async function fetchPOIsForRoute(routeId: string): Promise<POI[]> {

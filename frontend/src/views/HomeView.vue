@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import RoutesList from '@/components/RoutesList.vue';
-import PullRequestList from '@/components/PullRequestList.vue';
+import RoutesList from '@/components/routes/RoutesList.vue';
+import PullRequestList from '@/components/pullRequests/PullRequestList.vue';
 </script>
 
 <template>
