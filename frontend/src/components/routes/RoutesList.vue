@@ -4,7 +4,10 @@ import { fetchRoutes, Route } from '@/api/routes';
 import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
 import RouteCard from '@/components/routes/RouteCard.vue';
 import LinkTitle from '@/components/utils/LinkTitle.vue';
+import ListTitle from '@/components/utils/ListTitle.vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const routes = ref<Route[]>([]);
 const loading = ref(true);
 
@@ -22,6 +25,8 @@ const props = defineProps({
     default: false,
   },
 });
+
+const currentRoute = computed(() => route.path);
 
 const filteredRoutes = computed(() => {
   return props.filter ? routes.value.slice(0, props.filter) : routes.value;
@@ -45,7 +50,20 @@ onMounted(async () => {
 
 <template>
   <section class="mb-12">
-    <LinkTitle title="Routen" to="/routes" :loading :count="routes.length" />
+    <ListTitle
+      v-if="currentRoute === '/routes'"
+      title="Routen"
+      :loading="loading"
+      :count="routes.length"
+    />
+    <LinkTitle
+      v-else
+      title="Routen"
+      to="/routes"
+      :loading
+      :count="routes.length"
+      :currentMaxCount="3"
+    />
     <LoadingSpinner v-if="loading" />
     <div v-else class="routes-grid" :style="gridStyle">
       <RouteCard

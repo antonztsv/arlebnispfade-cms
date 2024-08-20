@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { fetchPullRequests, PullRequest } from '@/api/pullRequests';
 import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
 import PullRequestCard from '@/components/pullRequests/PullRequestCard.vue';
 import LinkTitle from '@/components/utils/LinkTitle.vue';
+import { useRoute } from 'vue-router';
+import ListTitle from '../utils/ListTitle.vue';
 
+const route = useRoute();
 const pullRequests = ref<PullRequest[]>([]);
 const loading = ref(true);
 const props = defineProps({
@@ -16,6 +19,8 @@ const props = defineProps({
     type: Boolean,
   },
 });
+
+const currentRoute = computed(() => route.path);
 
 onMounted(async () => {
   await loadPullRequests();
@@ -43,7 +48,20 @@ const handlePrUpdated = (prNumber: number) => {
 
 <template>
   <section class="mb-12">
-    <LinkTitle title="Änderungen" to="/changes" :loading :count="pullRequests.length" />
+    <ListTitle
+      v-if="currentRoute === '/changes'"
+      title="Änderungen"
+      :loading="loading"
+      :count="pullRequests.length"
+    />
+    <LinkTitle
+      v-else
+      title="Änderungen"
+      to="/changes"
+      :loading
+      :count="pullRequests.length"
+      :currentMaxCount="6"
+    />
     <LoadingSpinner v-if="loading" />
     <div v-else class="space-y-4">
       <PullRequestCard
