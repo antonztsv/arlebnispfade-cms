@@ -9,20 +9,21 @@ import POILocationInfo from '@/components/pois/POILocationInfo.vue';
 import POIARConfig from '@/components/pois/POIARConfig.vue';
 import POINFTConfig from '@/components/pois/POINFTConfig.vue';
 import POIActionButtons from '@/components/pois/POIActionButtons.vue';
+import POI3DModelViewer from '@/components/pois/POI3DModelViewer.vue';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
 const originalPoi = ref<POI | null>(null);
+const editedPoi = ref<POI | null>(null);
 const poi = ref<POI | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const isEditing = ref(false);
 const isSaving = ref(false);
 const isDeleting = ref(false);
-
-const editedPoi = ref<POI | null>(null);
+const showARPreview = ref(false);
 
 const routeId = computed(() => route.params.routeId as string);
 const poiId = computed(() => route.params.poiId as string);
@@ -139,6 +140,24 @@ const imageUrl = computed(() => {
     import.meta.env.VITE_GH_REPO
   }/main/src/${routeId.value}/images/${poi.value.image}`;
 });
+
+const modelUrls = computed(() => {
+  const models = poi.value?.ar.nft
+    .filter((nft) => nft.type === 'model')
+    .map((nft) => ({
+      name: nft.name,
+      url: `https://raw.githubusercontent.com/${import.meta.env.VITE_GH_OWNER}/${
+        import.meta.env.VITE_GH_REPO
+      }/main/src/${routeId.value}/ar-media/models/${nft.model}.glb`,
+    }));
+
+  return models || [];
+});
+
+const generateARPreview = () => {
+  showARPreview.value = true;
+  // todo: implement AR preview generation
+};
 </script>
 
 <template>
@@ -147,7 +166,17 @@ const imageUrl = computed(() => {
     <div v-else-if="poi && editedPoi" class="rounded-lg border bg-gray-100 p-6">
       <h1 class="mb-4 text-3xl font-semibold">{{ poi.title }}</h1>
 
-      <img :src="imageUrl" :alt="poi.title" class="mb-6 w-1/2 rounded" />
+      <img :src="imageUrl" :alt="poi.title" class="mb-6 w-full max-w-xl rounded" />
+
+      <POI3DModelViewer v-if="modelUrls.length > 0" :models="modelUrls" />
+
+      <!-- AR Preview Button -->
+      <button
+        @click="generateARPreview"
+        class="mb-6 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+      >
+        AR-Vorschau generieren
+      </button>
 
       <form @submit.prevent="savePOI">
         <POIBasicInfo v-model:editedPoi="editedPoi" :isEditing="isEditing" :isSaving="isSaving" />
