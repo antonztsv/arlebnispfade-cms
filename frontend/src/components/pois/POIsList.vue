@@ -6,7 +6,7 @@ import { fetchRoute, Route } from '@/api/routes';
 import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
 import ListTitle from '@/components/utils/ListTitle.vue';
 import POICard from '@/components/pois/POICard.vue';
-import NewPOICard from '@/components/pois/NewPOICard.vue';
+import NewPOICard from '@/components/pois/POICardNew.vue';
 import { useToast } from 'vue-toastification';
 
 const route = useRoute();
