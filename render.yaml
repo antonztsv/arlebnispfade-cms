@@ -25,7 +25,6 @@ services:
   # Frontend Service
   - type: web
     plan: free
-    region: frankfurt
     name: arlebnispfade-cms-frontend
     runtime: static
     buildCommand: cd frontend && npm install && npm run build
