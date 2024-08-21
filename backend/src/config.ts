@@ -9,7 +9,7 @@ const config = {
   githubRepoName: process.env.GITHUB_REPO_NAME,
   adminUsername: process.env.ADMIN_USERNAME || 'admin',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin',
-  mongodbUri: process.env.MONGODB_URI,
+  mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/arlebnispfadecms',
   commitPrefix: '[CMS]',
   currentRoutes: ['wiehl', 'wipperfuerth', 'strasse-der-arbeit'],
 };

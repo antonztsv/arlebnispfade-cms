@@ -1,0 +1,42 @@
+services:
+  # Backend Service
+  - type: web
+    name: arlebnispfade-cms-backend
+    env: node
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GITHUB_PERSONAL_ACCESS_TOKEN
+        sync: false
+      - key: GITHUB_REPO_OWNER
+        sync: false
+      - key: GITHUB_REPO_NAME
+        sync: false
+    healthCheckPath: /api/status
+
+  # Frontend Service
+  - type: web
+    name: arlebnispfade-cms-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: arlebnispfade-cms-backend
+          type: web
+          property: url
+      - key: VITE_GH_OWNER
+        sync: false
+      - key: VITE_GH_REPO
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
