@@ -10,6 +10,7 @@ import POIARConfig from '@/components/pois/POIARConfig.vue';
 import POINFTConfig from '@/components/pois/POINFTConfig.vue';
 import POIActionButtons from '@/components/pois/POIActionButtons.vue';
 import POI3DModelViewer from '@/components/pois/POI3DModelViewer.vue';
+import POIARPreview from '@/components/pois/POIARPreview.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -166,7 +167,13 @@ const generateARPreview = () => {
     <div v-else-if="poi && editedPoi" class="rounded-lg border bg-gray-100 p-6">
       <h1 class="mb-4 text-3xl font-semibold">{{ poi.title }}</h1>
 
-      <img :src="imageUrl" :alt="poi.title" class="mb-6 w-full max-w-xl rounded" />
+      <div
+        class="mb-4 flex flex-col justify-between space-y-4 md:space-x-4 md:space-y-0 lg:flex-row"
+      >
+        <img :src="imageUrl" :alt="poi.title" class="mb-4 w-full max-w-xl rounded" />
+
+        <POIARPreview />
+      </div>
 
       <POI3DModelViewer v-if="modelUrls.length > 0" :models="modelUrls" />
 
