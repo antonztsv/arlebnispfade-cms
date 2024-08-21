@@ -24,7 +24,6 @@ services:
 
   # Frontend Service
   - type: web
-    plan: free
     name: arlebnispfade-cms-frontend
     runtime: static
     buildCommand: cd frontend && npm install && npm run build
