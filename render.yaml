@@ -1,8 +1,10 @@
 services:
   # Backend Service
   - type: web
+    plan: free
+    region: frankfurt
     name: arlebnispfade-cms-backend
-    env: node
+    runtime: node
     buildCommand: cd backend && npm install && npm run build
     startCommand: cd backend && npm start
     envVars:
@@ -22,8 +24,10 @@ services:
 
   # Frontend Service
   - type: web
+    plan: free
+    region: frankfurt
     name: arlebnispfade-cms-frontend
-    env: static
+    runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
     envVars:
@@ -31,7 +35,7 @@ services:
         fromService:
           name: arlebnispfade-cms-backend
           type: web
-          property: url
+          property: host
       - key: VITE_GH_OWNER
         sync: false
       - key: VITE_GH_REPO
