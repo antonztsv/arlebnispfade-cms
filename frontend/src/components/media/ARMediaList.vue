@@ -17,11 +17,20 @@ const selectedMediaType = ref<string>('');
 
 const mediaTypes = ['audios', 'images', 'videos', 'models'];
 
-defineProps({
+const activeFilter = ref<'all' | 'audio' | 'image' | 'video' | 'model'>('all');
+
+const props = defineProps({
   arMedia: {
     type: Array as PropType<ARMedia[]>,
     required: true,
   },
+});
+
+const filteredARMedia = computed(() => {
+  if (activeFilter.value === 'all') {
+    return props.arMedia;
+  }
+  return props.arMedia.filter((media) => media.type === activeFilter.value);
 });
 
 const isUploadDisabled = computed(() => {
@@ -68,6 +77,10 @@ const handleARMediaDelete = async (media: ARMedia) => {
     deletingMedia.value = null;
   }
 };
+
+const changeFilter = (filter: 'all' | 'audio' | 'image' | 'video' | 'model') => {
+  activeFilter.value = filter;
+};
 </script>
 
 <template>
@@ -107,9 +120,31 @@ const handleARMediaDelete = async (media: ARMedia) => {
 
     <hr class="my-4 border-gray-300" />
 
+    <div class="mb-4 flex items-center justify-between">
+      <span class="pi pi-filter p-2 px-3"></span>
+      <button
+        v-for="filter in ['all', 'audio', 'image', 'video', 'model'] as const"
+        :key="filter"
+        @click="changeFilter(filter)"
+        :class="[
+          'rounded-full p-2 px-8 sm:px-10 md:px-14 lg:px-8 xl:px-11 2xl:px-14',
+          activeFilter === filter
+            ? 'bg-blue-500 text-white'
+            : 'border bg-gray-200 text-gray-700 hover:bg-gray-300',
+        ]"
+        :title="filter.charAt(0).toUpperCase() + filter.slice(1)"
+      >
+        <span v-if="filter === 'all'" class="pi pi-list"></span>
+        <span v-else-if="filter === 'audio'" class="pi pi-volume-up"></span>
+        <span v-else-if="filter === 'image'" class="pi pi-image"></span>
+        <span v-else-if="filter === 'video'" class="pi pi-video"></span>
+        <span v-else-if="filter === 'model'" class="pi pi-box"></span>
+      </button>
+    </div>
+
     <div class="mt-4 space-y-4">
       <div
-        v-for="media in arMedia"
+        v-for="media in filteredARMedia"
         :key="media.id"
         class="rounded-lg border border-l-8 border-l-blue-500 bg-gray-100 p-4"
       >
@@ -124,7 +159,7 @@ const handleARMediaDelete = async (media: ARMedia) => {
               ></span>
               <span
                 v-else-if="media.type === 'audio'"
-                class="pi pi-headphones text-md mr-2 self-center"
+                class="pi pi-volume-up text-md mr-2 self-center"
               ></span>
               <span
                 v-else-if="media.type === 'image'"

@@ -46,7 +46,7 @@ async function loadImages() {
 </script>
 
 <template>
-  <section class="grid grid-cols-1 gap-4 space-y-4 md:grid-cols-2 md:space-y-0">
+  <section class="grid grid-cols-1 gap-4 space-y-4 md:space-y-0 lg:grid-cols-2">
     <div>
       <ListTitle title="AR-Medien" :loading="loadingARMedia" :count="arMedia.length" />
       <LoadingSpinner v-if="loadingARMedia" />
