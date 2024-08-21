@@ -6,14 +6,14 @@ Ein Projekt zur redaktionellen Verwaltung von Augmented Reality (AR) Inhalten f�
 
 Diese Webanwendung ermöglicht die einfache Integration und Verwaltung von AR-Inhalten wie Texte, Bilder, Audio, Video, 3D-Modelle und Geolocation-Daten. Sie wird im Rahmen einer Bachelorarbeit an der TH Köln entwickelt.
 
-![ARlebnispfade OBK - CMS](screenshot.png)
+![ARlebnispfade OBK - CMS](docs/screenshot-home.png)
 
 ## Struktur
 
 Das Projekt besteht aus zwei Hauptkomponenten:
 
-- `frontend/`: Benutzeroberfläche zur Verwaltung der AR-Inhalte
-- `backend/`: Server-API zur Datenverwaltung und -speicherung
+- `frontend/`: Benutzeroberfläche zur Verwaltung der Routen, POIs, Median und AR-Inhalte
+- `backend/`: Server-API zur Datenverwaltung zwischen der Benutzeroberfläche und dem Git-Repository
 
 ## Technologien
 
@@ -36,13 +36,15 @@ Das Projekt besteht aus zwei Hauptkomponenten:
 
 ## Installation
 
+**Repository klonen**
+
 ```bash
-# Repository klonen
 git clone
 ```
 
+**Container über Docker Compose starten**
+
 ```bash
-# Docker Compose starten
 docker-compose up -d  --build
 ```
 
@@ -56,7 +58,15 @@ Backend URL: `http://localhost:3000`
 
 - Verwaltung verschiedener AR-Inhaltstypen
 - Vorschau der AR-Inhalte
-- Integration mit bestehenden Datenstrukturen des "ARlebnis OBK" Projekts
+- Integration mit bestehenden Datenstrukturen des "ARlebnispfade Oberberg" Projekts
+
+![ARlebnispfade OBK - CMS](docs/screenshot-routes.png)
+
+![ARlebnispfade OBK - CMS](docs/screenshot-wiehl.png)
+
+![ARlebnispfade OBK - CMS](docs/screenshot-muehle.png)
+
+![ARlebnispfade OBK - CMS](docs/screenshot-changes.png)
 
 ## Beitrag
 
