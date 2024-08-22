@@ -154,11 +154,6 @@ const modelUrls = computed(() => {
 
   return models || [];
 });
-
-const generateARPreview = () => {
-  showARPreview.value = true;
-  // todo: implement AR preview generation
-};
 </script>
 
 <template>
@@ -176,14 +171,6 @@ const generateARPreview = () => {
       </div>
 
       <POI3DModelViewer v-if="modelUrls.length > 0" :models="modelUrls" />
-
-      <!-- AR Preview Button -->
-      <button
-        @click="generateARPreview"
-        class="mb-6 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-      >
-        AR-Vorschau generieren
-      </button>
 
       <form @submit.prevent="savePOI">
         <POIBasicInfo v-model:editedPoi="editedPoi" :isEditing="isEditing" :isSaving="isSaving" />
