@@ -1,6 +1,6 @@
 import config from '@/config';
-import { connectToDatabase } from '../db/database';
-import { User } from '../models/User';
+import { connectToDatabase } from '@/db/database';
+import { User } from '@/models/User';
 import bcrypt from 'bcrypt';
 
 async function createUser() {

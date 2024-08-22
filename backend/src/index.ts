@@ -1,12 +1,12 @@
-import config from './config';
+import config from '@/config';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { connectToDatabase } from './db/database';
-import apiRoutes from './routes';
-import { errorMiddleware } from './middleware/errorMiddleware';
+import { connectToDatabase } from '@/db/database';
+import apiRoutes from '@/routes';
+import { errorMiddleware } from '@/middleware/errorMiddleware';
 
 const app = express();
 const PORT = config.port;

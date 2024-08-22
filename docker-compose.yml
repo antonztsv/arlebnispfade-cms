@@ -20,7 +20,6 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/arlebnispfadecms
     command: npm run dev
     depends_on:
       - mongo
