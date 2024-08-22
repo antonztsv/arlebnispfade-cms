@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import QRCode from 'qrcode.vue';
 import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
+const authStore = useAuthStore();
+const currentToken = authStore.token;
 
 const qrCodeValue = computed(() => {
   const baseUrl = window.location.origin;
-  return `${baseUrl}/ar-preview/${route.params.routeId}/${route.params.poiId}`;
+  return `${baseUrl}/ar-preview/${route.params.routeId}/${route.params.poiId}?token=${currentToken}`;
 });
 </script>
 

@@ -24,7 +24,6 @@ const error = ref<string | null>(null);
 const isEditing = ref(false);
 const isSaving = ref(false);
 const isDeleting = ref(false);
-const showARPreview = ref(false);
 
 const routeId = computed(() => route.params.routeId as string);
 const poiId = computed(() => route.params.poiId as string);

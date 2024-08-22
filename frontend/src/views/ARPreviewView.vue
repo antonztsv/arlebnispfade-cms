@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { fetchPOIById, POI } from '@/api/pois';
+import { POI } from '@/api/pois';
 import ARViewer from '@/components/ar/ARViewer.vue';
 import LoadingSpinner from '@/components/utils/LoadingSpinner.vue';
+import { API_BASE_URL } from '@/api/config';
 
 const route = useRoute();
 const poi = ref<POI | null>(null);
@@ -12,9 +13,26 @@ const error = ref<string | null>(null);
 const showAR = ref(false);
 
 onMounted(async () => {
+  const token = route.query.token as string;
+  if (token) {
+    localStorage.setItem('token', token);
+  }
+
   try {
     const { routeId, poiId } = route.params;
-    poi.value = await fetchPOIById(routeId as string, poiId as string);
+    const url = `${API_BASE_URL}/routes/${routeId}/pois/${poiId}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch POI data');
+    }
+
+    poi.value = await response.json();
     loading.value = false;
   } catch (err) {
     console.error('Error fetching POI:', err);
