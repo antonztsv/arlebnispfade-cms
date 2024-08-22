@@ -9,6 +9,7 @@ const authStore = useAuthStore();
 const username = ref('');
 const password = ref('');
 const error = ref('');
+const isLoggingIn = ref(false);
 
 const handleSubmit = async () => {
   error.value = '';
@@ -17,11 +18,14 @@ const handleSubmit = async () => {
     return;
   }
 
+  isLoggingIn.value = true;
   try {
     await authStore.login(username.value, password.value);
     router.push('/');
   } catch (err) {
     error.value = 'Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.';
+  } finally {
+    isLoggingIn.value = false;
   }
 };
 </script>
@@ -63,9 +67,11 @@ const handleSubmit = async () => {
         <div>
           <button
             type="submit"
-            class="w-full rounded border border-transparent bg-blue-500 px-4 py-3 text-sm font-medium text-white hover:bg-blue-600 active:bg-blue-700"
+            :disabled="isLoggingIn"
+            class="w-full rounded border border-transparent bg-blue-500 px-4 py-3 text-sm font-medium text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-400"
           >
-            Anmelden
+            <span v-if="isLoggingIn" class="pi pi-spin pi-spinner mr-2"></span>
+            {{ isLoggingIn ? '' : 'Anmelden' }}
           </button>
         </div>
       </form>
