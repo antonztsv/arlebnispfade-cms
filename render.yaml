@@ -3,7 +3,7 @@ services:
   - type: web
     plan: free
     region: frankfurt
-    name: arlebnispfade-cms-backend
+    name: cms-backend
     runtime: node
     rootDir: backend
     buildCommand: npm install && npm run build
@@ -25,7 +25,7 @@ services:
 
   # Frontend Service
   - type: web
-    name: arlebnispfade-cms-frontend
+    name: cms-frontend
     runtime: static
     region: frankfurt
     buildCommand: npm install && npm run build
@@ -33,7 +33,7 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
-          name: arlebnispfade-cms-backend
+          name: cms-backend
           type: web
           property: host
       - key: VITE_GH_OWNER
