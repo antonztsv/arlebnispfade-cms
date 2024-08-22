@@ -6,8 +6,6 @@ import { NotFoundError } from '@/utils/errorHandler';
 export async function getARPreview(req: Request, res: Response) {
   try {
     const { routeId, poiId } = req.params;
-    console.log('Generating AR preview for route', routeId, 'and POI', poiId);
-
     const poi = await poiService.getPOIById(routeId, poiId);
 
     if (!poi) {
@@ -24,8 +22,6 @@ export async function getARPreview(req: Request, res: Response) {
       nftPosition: nft.position,
       nftRotation: nft.rotation,
     };
-
-    console.log('AR preview template data:', templateData);
 
     res.render('ar-preview', templateData);
   } catch (error) {
