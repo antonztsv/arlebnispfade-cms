@@ -51,14 +51,14 @@ onMounted(async () => {
 const initializeNewPoi = () => {
   const newPoi: POI = {
     id: '',
-    title: 'Neuer POI',
-    image: '',
+    title: 'Neuer AR-Spot',
+    image: 'pfad-zum-bild.jpg',
     layout: 'poi',
-    type: '',
-    gmaps: null,
+    type: 'ar-data',
+    gmaps: '',
     coords: [0, 0],
-    info: '',
-    arDesc: '',
+    info: 'Informationen zum AR-Spot',
+    arDesc: 'Beschreibung zur Verwendung der AR-Funktion am Spot',
     ar: {
       type: '',
       content: '',
@@ -179,7 +179,10 @@ const modelUrls = computed(() => {
     <div v-else-if="poi && editedPoi" class="rounded-lg border bg-gray-100 p-6">
       <h1 class="mb-4 text-3xl font-semibold">{{ poi.title }}</h1>
 
-      <div class="mb-4 flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
+      <div
+        v-if="!isNewPoi"
+        class="mb-4 flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0"
+      >
         <div class="w-full lg:w-1/2">
           <img :src="imageUrl" :alt="poi.title" class="h-auto w-full rounded object-cover" />
         </div>
