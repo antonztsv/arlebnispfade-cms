@@ -127,7 +127,7 @@ const changeFilter = (filter: 'all' | 'audio' | 'image' | 'video' | 'model') => 
         :key="filter"
         @click="changeFilter(filter)"
         :class="[
-          'rounded-full p-2 px-8 sm:px-10 md:px-14 lg:px-8 xl:px-11 2xl:px-14',
+          'rounded-lg p-2 px-8 sm:px-10 md:px-14 lg:px-8 xl:px-11 2xl:px-14',
           activeFilter === filter
             ? 'bg-blue-500 text-white'
             : 'border bg-gray-200 text-gray-700 hover:bg-gray-300',
