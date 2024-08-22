@@ -8,7 +8,7 @@
     "node": "^20.0.0"
   },
   "scripts": {
-    "start": "node -r tsconfig-paths/register dist/index.js",
+    "start": "tsx -r tsconfig-paths/register dist/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "create-user": "tsx src/scripts/createUser.ts"
