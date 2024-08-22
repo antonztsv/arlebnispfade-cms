@@ -27,7 +27,6 @@ services:
   - type: web
     name: cms-frontend
     runtime: static
-    region: frankfurt
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
