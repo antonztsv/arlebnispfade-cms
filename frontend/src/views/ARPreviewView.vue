@@ -48,7 +48,7 @@ const startAR = () => {
 
 <template>
   <div class="ar-preview-view">
-    <h1 class="mb-4 text-2xl font-bold">AR Preview</h1>
+    <h1 class="mb-4 text-2xl font-bold">AR-Vorschau</h1>
     <LoadingSpinner v-if="loading" />
     <div v-else-if="error">{{ error }}</div>
     <div v-else-if="poi">
@@ -58,7 +58,7 @@ const startAR = () => {
         @click="startAR"
         class="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
       >
-        Start AR Preview
+        AR-Vorschau starten
       </button>
       <ARViewer
         v-if="showAR"
