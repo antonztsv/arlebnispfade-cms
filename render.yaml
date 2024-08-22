@@ -5,8 +5,9 @@ services:
     region: frankfurt
     name: arlebnispfade-cms-backend
     runtime: node
-    buildCommand: cd backend && npm ci && npm run build
-    startCommand: cd backend && npm start
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -26,8 +27,9 @@ services:
   - type: web
     name: arlebnispfade-cms-frontend
     runtime: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
+    region: frankfurt
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
