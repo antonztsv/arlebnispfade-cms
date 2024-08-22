@@ -10,7 +10,8 @@ import POIARConfig from '@/components/pois/POIARConfig.vue';
 import POINFTConfig from '@/components/pois/POINFTConfig.vue';
 import POIActionButtons from '@/components/pois/POIActionButtons.vue';
 import POI3DModelViewer from '@/components/pois/POI3DModelViewer.vue';
-import POIARPreview from '@/components/pois/POIARPreview.vue';
+import POIARQrCode from '@/components/pois/POIARQrCode.vue';
+import NFTImageModal from '@/components/pois/POINFTImageModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -24,11 +25,20 @@ const error = ref<string | null>(null);
 const isEditing = ref(false);
 const isSaving = ref(false);
 const isDeleting = ref(false);
+const showNFTModal = ref(false);
 
 const routeId = computed(() => route.params.routeId as string);
 const poiId = computed(() => route.params.poiId as string);
 
 const isNewPoi = computed(() => poiId.value === 'new');
+
+const nftImages = computed(() => {
+  if (!poi.value || !poi.value.ar.nft) return [];
+  return poi.value.ar.nft.map((nft) => ({
+    id: nft.id,
+    url: `https://raw.githubusercontent.com/${import.meta.env.VITE_GH_OWNER}/${import.meta.env.VITE_GH_REPO}/main/src/${routeId.value}/ar-media/images/${nft.id}`,
+  }));
+});
 
 onMounted(async () => {
   if (isNewPoi.value) {
@@ -134,6 +144,14 @@ const deletePOIHandler = async () => {
   }
 };
 
+const openNFTModal = () => {
+  showNFTModal.value = true;
+};
+
+const closeNFTModal = () => {
+  showNFTModal.value = false;
+};
+
 const imageUrl = computed(() => {
   if (!poi.value) return '';
   return `https://raw.githubusercontent.com/${import.meta.env.VITE_GH_OWNER}/${
@@ -161,12 +179,26 @@ const modelUrls = computed(() => {
     <div v-else-if="poi && editedPoi" class="rounded-lg border bg-gray-100 p-6">
       <h1 class="mb-4 text-3xl font-semibold">{{ poi.title }}</h1>
 
-      <div
-        class="mb-4 flex flex-col justify-between space-y-4 md:space-x-4 md:space-y-0 lg:flex-row"
-      >
-        <img :src="imageUrl" :alt="poi.title" class="mb-4 w-full max-w-xl rounded" />
+      <div class="mb-4 flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
+        <div class="w-full lg:w-1/2">
+          <img :src="imageUrl" :alt="poi.title" class="h-auto w-full rounded object-cover" />
+        </div>
 
-        <POIARPreview />
+        <div class="flex w-full flex-col justify-start space-y-4 lg:w-1/2">
+          <div class="space-y-4">
+            <POIARQrCode />
+            <div class="rounded-lg border bg-white p-4 shadow-md">
+              <h3 class="mb-2 text-lg font-semibold">Beschreibung</h3>
+              <p class="text-sm text-gray-600">{{ poi.arDesc }}</p>
+            </div>
+            <button
+              @click="openNFTModal"
+              class="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+            >
+              NFT-Bilder anzeigen
+            </button>
+          </div>
+        </div>
       </div>
 
       <POI3DModelViewer v-if="modelUrls.length > 0" :models="modelUrls" />
@@ -194,5 +226,7 @@ const modelUrls = computed(() => {
         />
       </form>
     </div>
+
+    <NFTImageModal v-if="showNFTModal" :images="nftImages" @close="closeNFTModal" />
   </div>
 </template>

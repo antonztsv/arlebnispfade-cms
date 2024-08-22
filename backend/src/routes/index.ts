@@ -5,7 +5,8 @@ import routeRoutes from '@/routes/api/routeRoutes';
 import poiRoutes from '@/routes/api/poiRoutes';
 import pullRequestRoutes from '@/routes/api/pullRequestRoutes';
 import arMediaRoutes from '@/routes/api/arMediaRoutes';
-import imageRoutes from './api/imageRoutes';
+import imageRoutes from '@/routes/api/imageRoutes';
+import arPreviewRoutes from '@/routes/api/arPreviewRoutes';
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use('/routes', poiRoutes);
 router.use('/routes', arMediaRoutes);
 router.use('/routes', imageRoutes);
 router.use('/pull-requests', pullRequestRoutes);
+router.use('/ar-preview', arPreviewRoutes);
 
 export default router;

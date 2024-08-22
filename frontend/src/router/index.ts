@@ -6,7 +6,6 @@ import POIDetailView from '@/views/POIDetailView.vue';
 import RoutesView from '@/views/RoutesView.vue';
 import ChangesView from '@/views/ChangesView.vue';
 import RouteDetailView from '@/views/RouteDetailView.vue';
-import ARPreviewView from '@/views/ARPreviewView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,12 +51,6 @@ const router = createRouter({
       name: 'changes',
       component: ChangesView,
       meta: { requiresAuth: true },
-    },
-    {
-      path: '/ar-preview/:routeId/:poiId',
-      name: 'ar-preview',
-      component: ARPreviewView,
-      meta: { requiresAuth: false },
     },
     {
       path: '/:pathMatch(.*)*',
