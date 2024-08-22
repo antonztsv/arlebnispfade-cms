@@ -32,7 +32,7 @@ services:
         fromService:
           name: cms-backend
           type: web
-          property: host
+          property: hostport
       - key: VITE_GH_OWNER
         sync: false
       - key: VITE_GH_REPO
