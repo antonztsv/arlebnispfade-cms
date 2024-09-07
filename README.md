@@ -36,16 +36,27 @@ Das Projekt besteht aus zwei Hauptkomponenten:
 
 ## Installation
 
+Das Projekt kann über Docker Compose gestartet werden. Vorraussetzung ist, dass Docker und Docker Compose auf dem System installiert sind. Außerdem muss ein Access-Token für das ar-lebnispfade Repository auf GitHub erstellt werden.
+
 **Repository klonen**
 
 ```bash
-git clone
+git clone git@github.com:antonztsv/arlebnispfade-cms.git
 ```
 
-**Container über Docker Compose starten**
+**Container über Docker Compose builden und starten**
 
 ```bash
 docker-compose up -d  --build
+```
+
+** Lokalen Admin Nutzer erstellen **
+
+Der
+
+```bash
+cd backend
+docker compose exec backend npm run create-user
 ```
 
 ## Verwendung
@@ -64,7 +75,7 @@ Backend URL: `http://localhost:3000`
 
 ![ARlebnispfade OBK - CMS](docs/screenshot-wiehl.png)
 
-![ARlebnispfade OBK - CMS](docs/screenshot-muehle.png)
+![ARlebnispfade OBK - CMS](docs/screenshot-muehle-blur.png)
 
 ![ARlebnispfade OBK - CMS](docs/screenshot-changes.png)
 
