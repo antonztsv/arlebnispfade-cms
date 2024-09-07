@@ -10,10 +10,10 @@ Diese Webanwendung ermöglicht die einfache Integration und Verwaltung von AR-In
 
 ## Struktur
 
-Das Projekt besteht aus zwei Hauptkomponenten:
+Die Anwendung besteht aus zwei Hauptkomponenten:
 
-- `frontend/`: Benutzeroberfläche zur Verwaltung der Routen, POIs, Median und AR-Inhalte
-- `backend/`: Server-API zur Datenverwaltung zwischen der Benutzeroberfläche und dem Git-Repository
+- `frontend/`: Benutzeroberfläche zur Verwaltung von Routen, POIs, Medien und AR-Inhalten
+- `backend/`: Server-API zur Datenverwaltung zwischen der Benutzeroberfläche und dem Git-Repository des Koooperationsprimärprojekts
 
 ## Technologien
 
