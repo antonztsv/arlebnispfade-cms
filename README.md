@@ -4,7 +4,7 @@ Ein Projekt zur redaktionellen Verwaltung von Augmented Reality (AR) Inhalten f�
 
 ## Überblick
 
-Diese Webanwendung ermöglicht die einfache Integration und Verwaltung von AR-Inhalten wie Texte, Bilder, Audio, Video, 3D-Modelle und Geolocation-Daten. Sie wird im Rahmen einer Bachelorarbeit an der TH Köln entwickelt.
+Diese Webanwendung ermöglicht die einfache Integration und Verwaltung von AR-Inhalten wie Texte, Bilder, Audio, Video, und 3D-Modelle. Sie wird im Rahmen einer Bachelorarbeit an der TH Köln entwickelt.
 
 ![ARlebnispfade OBK - CMS](docs/screenshot-home.png)
 
@@ -13,7 +13,7 @@ Diese Webanwendung ermöglicht die einfache Integration und Verwaltung von AR-In
 Die Anwendung besteht aus zwei Hauptkomponenten:
 
 - `frontend/`: Benutzeroberfläche zur Verwaltung von Routen, POIs, Medien und AR-Inhalten
-- `backend/`: Server-API zur Datenverwaltung zwischen der Benutzeroberfläche und dem Git-Repository des Koooperationsprimärprojekts
+- `backend/`: Server-API zur Datenverwaltung zwischen der Benutzeroberfläche und dem GitHub-Repository des Koooperationsprojekts
 
 ## Technologien
 
@@ -33,6 +33,7 @@ Die Anwendung besteht aus zwei Hauptkomponenten:
 
 - Frontend: Vue3, Vite, TypeScript
 - Backend: Node.js, Express.js, TypeScript
+- Datenbank: MongoDB (Benutzerverwaltung)
 
 ## Installation
 
@@ -59,6 +60,11 @@ cd backend
 docker compose exec backend npm run create-user
 ```
 
+** Umgebungsvariablen **
+
+Die Umgebungsvariablen müssen in einer `.env` Datei in beiden Ordnern `frontend` und `backend` gesetzt werden.
+Hierfür kann die `.env.example` Datei kopiert und angepasst werden.
+
 ## Verwendung
 
 Frontend URL: `http://localhost:5173`
@@ -69,7 +75,7 @@ Backend URL: `http://localhost:3000`
 
 - Verwaltung verschiedener AR-Inhaltstypen
 - Vorschau der AR-Inhalte
-- Integration mit bestehenden Datenstrukturen des "ARlebnispfade Oberberg" Projekts
+- Integration mit bestehenden Datenstrukturen des "ARlebnispfade OBK" Projekts
 
 ![ARlebnispfade OBK - CMS](docs/screenshot-routes.png)
 
