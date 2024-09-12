@@ -51,18 +51,17 @@ git clone git@github.com:antonztsv/arlebnispfade-cms.git
 docker-compose up -d  --build
 ```
 
-** Lokalen Admin Nutzer erstellen **
-
-Der
+**Lokalen Admin Nutzer erstellen**
 
 ```bash
 cd backend
 docker compose exec backend npm run create-user
 ```
 
-** Umgebungsvariablen **
+**Umgebungsvariablen**
 
-Die Umgebungsvariablen müssen in einer `.env` Datei in beiden Ordnern `frontend` und `backend` gesetzt werden.
+Die Umgebungsvariablen müssen in einer `.env` Datei in beiden Ordnern `frontend/` und `backend/` gesetzt werden.
+
 Hierfür kann die `.env.example` Datei kopiert und angepasst werden.
 
 ## Verwendung
