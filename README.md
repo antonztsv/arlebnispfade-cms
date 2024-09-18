@@ -70,6 +70,8 @@ Frontend URL: `http://localhost:5173`
 
 Backend URL: `http://localhost:3000`
 
+Die Dokumentation der REST-API des Backends [ist im Wiki](https://github.com/antonztsv/arlebnispfade-cms/wiki/Backend-API) aufgelistet.
+
 ## Funktionen
 
 - Verwaltung verschiedener AR-Inhaltstypen
